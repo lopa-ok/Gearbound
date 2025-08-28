@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://58w3b764e8tk"]
+
+[ext_resource type="PackedScene" uid="uid://d1xsfknmnae3" path="res://models/Furniture/GLTF format/pillowLong.glb" id="1_c8q1s"]
+
+[node name="pillowLong" instance=ExtResource("1_c8q1s")]

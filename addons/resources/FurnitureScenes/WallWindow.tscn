@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwktp56vafgil"]
+
+[ext_resource type="PackedScene" uid="uid://6vls210i6w6m" path="res://models/Furniture/GLTF format/wallWindow.glb" id="1_r7ajg"]
+
+[node name="wallWindow" instance=ExtResource("1_r7ajg")]
+
+[node name="window" parent="wallWindow(Clone)" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.312708, 0.587693, -0.002725)

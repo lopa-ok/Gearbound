@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://cdtj3slm3kcqj"]
+
+[ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_dojpo"]
+[ext_resource type="PackedScene" uid="uid://cgf4fihd0qbp7" path="res://resources/FurnitureScenes/Cone.tscn" id="2_1fpmp"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_dojpo"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_1fpmp"]
+sky_material = SubResource("ProceduralSkyMaterial_dojpo")
+
+[sub_resource type="Environment" id="Environment_df0lk"]
+background_mode = 2
+sky = SubResource("Sky_1fpmp")
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8xg12"]
+albedo_color = Color(0.254911, 0.580709, 0.341783, 1)
+
+[node name="TestLevel" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.904827, 0.425779, 1.86114e-08, 0, -4.37114e-08, 1, 0.425779, 0.904827, 3.95512e-08, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_df0lk")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.826567, 0)
+use_collision = true
+size = Vector3(1000, 1, 1000)
+material = SubResource("StandardMaterial3D_8xg12")
+
+[node name="Player" parent="." instance=ExtResource("1_dojpo")]
+
+[node name="Cone" parent="." instance=ExtResource("2_1fpmp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.576162, -0.326567, 3.77038)

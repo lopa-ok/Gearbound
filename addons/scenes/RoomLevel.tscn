@@ -1,0 +1,115 @@
+[gd_scene load_steps=19 format=3 uid="uid://bchw5g5rjommu"]
+
+[ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
+[ext_resource type="PackedScene" uid="uid://bya7fkjtkijcy" path="res://resources/FurnitureScenes/BookcaseLow.tscn" id="2_1pyxk"]
+[ext_resource type="PackedScene" uid="uid://c2dlr2udwovwb" path="res://resources/FurnitureScenes/Desk.tscn" id="3_0cs01"]
+[ext_resource type="PackedScene" uid="uid://n16r124sohdv" path="res://resources/FurnitureScenes/DeskChair.tscn" id="3_jcleb"]
+[ext_resource type="PackedScene" uid="uid://da7tdgxuinrfd" path="res://resources/FurnitureScenes/Wall.tscn" id="4_jcleb"]
+[ext_resource type="PackedScene" uid="uid://i1x78r4gg7u" path="res://resources/FurnitureScenes/WallDoor.tscn" id="5_x0eo1"]
+[ext_resource type="PackedScene" uid="uid://cxfa4l5brxvne" path="res://resources/FurnitureScenes/WallCorner.tscn" id="6_6sfjc"]
+[ext_resource type="PackedScene" uid="uid://cwktp56vafgil" path="res://resources/FurnitureScenes/WallWindow.tscn" id="7_o74sw"]
+[ext_resource type="PackedScene" uid="uid://8e5qowsgr6lu" path="res://resources/FurnitureScenes/Door.tscn" id="8_opvuv"]
+[ext_resource type="PackedScene" uid="uid://dfnrv365qegho" path="res://resources/FurnitureScenes/Laptop.tscn" id="9_7vmnu"]
+[ext_resource type="PackedScene" uid="uid://y06d54nykjhg" path="res://resources/FurnitureScenes/BunkBed.tscn" id="11_2cvul"]
+[ext_resource type="PackedScene" uid="uid://bb0ngfm1t32dh" path="res://resources/FurnitureScenes/ramp.tscn" id="12_23ank"]
+[ext_resource type="PackedScene" uid="uid://ds0op5pbuonmy" path="res://resources/FurnitureScenes/CeilingLamp.tscn" id="13_417pg"]
+[ext_resource type="PackedScene" uid="uid://mtv8mfimxhys" path="res://resources/FurnitureScenes/WallLamp.tscn" id="14_ijewl"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
+sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
+sky_horizon_color = Color(0.51475, 0.52058, 0.530468, 1)
+ground_horizon_color = Color(0.51475, 0.52058, 0.530468, 1)
+energy_multiplier = 0.9
+
+[sub_resource type="Sky" id="Sky_va0de"]
+sky_material = SubResource("ProceduralSkyMaterial_ijewl")
+
+[sub_resource type="Environment" id="Environment_xhjsn"]
+background_mode = 2
+sky = SubResource("Sky_va0de")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8xg12"]
+albedo_color = Color(0.52, 0.52, 0.52, 1)
+
+[node name="TestLevel" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_xhjsn")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.802817, -0.459399, 0.380048, 0, 0.637424, 0.770513, -0.596225, -0.618581, 0.511735, 0.0211477, -0.0399313, 0.025692)
+visible = false
+light_energy = 0.5
+shadow_enabled = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.76837e-07, -0.832153, -0.393117)
+use_collision = true
+size = Vector3(1000, 1, 1000)
+material = SubResource("StandardMaterial3D_8xg12")
+
+[node name="Player" parent="." groups=["player"] instance=ExtResource("1_bktfv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.56174, 0.335056, 1.01838)
+center_of_mass = Vector3(0, -0.11, -0.27)
+
+[node name="Level" type="Node3D" parent="."]
+
+[node name="bookcaseOpenLow" parent="Level" instance=ExtResource("2_1pyxk")]
+transform = Transform3D(-6.55671e-07, 0, 15, 0, 15, 0, -15, 0, -6.55671e-07, 14.89, -0.338433, 29.781)
+
+[node name="laptop" parent="Level" instance=ExtResource("9_7vmnu")]
+transform = Transform3D(11.5852, 0, 9.52804, 0, 15, 0, -9.52804, 0, 11.5852, -9.20992, 5.38284, 10.9413)
+
+[node name="doorway" parent="Level" instance=ExtResource("8_opvuv")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -8.49656, -0.332161, -10.9285)
+
+[node name="doorway2" parent="Level" instance=ExtResource("8_opvuv")]
+transform = Transform3D(1.78873e-07, 0, -15, 0, 15, 0, 15, 0, 1.78873e-07, 15.3273, -0.332161, -6.95133)
+
+[node name="wallWindow" parent="Level" instance=ExtResource("7_o74sw")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -4.351, -0.332, 37.33)
+
+[node name="wall3" parent="Level" instance=ExtResource("4_jcleb")]
+transform = Transform3D(-1.83588e-06, 0, -15, 0, 15, 0, 42, 0, -6.55671e-07, 15.273, -0.333, 4.11711)
+
+[node name="wallCorner" parent="Level" instance=ExtResource("6_6sfjc")]
+transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -12.394, -0.332, 29.08)
+
+[node name="wallCorner2" parent="Level" instance=ExtResource("6_6sfjc")]
+transform = Transform3D(-15, 0, 1.31134e-06, 0, 15, 0, -1.31134e-06, 0, -15, 18.158, -0.332, 30.1122)
+
+[node name="wallDoorway" parent="Level" instance=ExtResource("5_x0eo1")]
+transform = Transform3D(15, 0, -2.62268e-06, 0, 15, 0, 2.62268e-06, 0, 15, -12.3961, -0.332153, -10.7455)
+
+[node name="wallDoorway2" parent="Level" instance=ExtResource("5_x0eo1")]
+transform = Transform3D(1.78873e-07, 0, -15, 0, 15, 0, 15, 0, 1.78873e-07, 15.254, -0.390868, -10.7686)
+
+[node name="wall2" parent="Level" instance=ExtResource("4_jcleb")]
+transform = Transform3D(40, 0, 0, 0, 15, 0, 0, 0, 15, 1.92, -0.332, -10.75)
+
+[node name="wall" parent="Level" instance=ExtResource("4_jcleb")]
+transform = Transform3D(-1.74846e-06, 0, -15, 0, 15, 0, 40, 0, -6.55671e-07, -12.394, -0.332152, -10.8194)
+
+[node name="chairDesk" parent="Level" instance=ExtResource("3_jcleb")]
+transform = Transform3D(5.47047, 0, -13.9669, 0, 15, 0, 13.9669, 0, 5.47047, -8.1029, -0.618705, 7.91303)
+
+[node name="desk" parent="Level" instance=ExtResource("3_0cs01")]
+transform = Transform3D(-6.55671e-07, 0, 15, 0, 15, 0, -15, 0, -6.55671e-07, -5.91337, -0.394896, 16.0757)
+
+[node name="bedBunk" parent="Level" instance=ExtResource("11_2cvul")]
+transform = Transform3D(-15, 0, -1.31134e-06, 0, 15, 0, 1.31134e-06, 0, -15, -2.95041, -0.545783, 18.8076)
+
+[node name="floorHalf" parent="Level" instance=ExtResource("12_23ank")]
+transform = Transform3D(6.5, 0, 0, 0, 5.89636, -2.7355, 0, 2.7355, 5.89636, -9.9392, 2.30573, 21.97)
+
+[node name="floorHalf2" parent="Level" instance=ExtResource("12_23ank")]
+transform = Transform3D(-2.83341e-07, 2.96452, 5.76981, 1.08551e-08, 5.76981, -2.96452, -6.48684, -1.19833e-07, -2.56982e-07, 2.25795, -0.602212, 29.5611)
+
+[node name="floorHalf3" parent="Level" instance=ExtResource("12_23ank")]
+transform = Transform3D(100, 0, 0, 0, 1, 0, 0, 0, 50, -15.1666, 18.9657, 37.2214)
+
+[node name="lampWall" parent="Level" instance=ExtResource("14_ijewl")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 7.40432, 12.7878, -11.4683)
+
+[node name="lampSquareCeiling2" parent="Level" instance=ExtResource("13_417pg")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0.656125, 15.5067, 17.5164)
