@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dq3snoexknous"
+path="res://.godot/imported/vehicle-convertible.obj-348a66739be3666d52089ab3aff08754.mesh"
+
+[deps]
+
+files=["res://.godot/imported/vehicle-convertible.obj-348a66739be3666d52089ab3aff08754.mesh"]
+
+source_file="res://resources/Cool/Models/OBJ format/vehicle-convertible.obj"
+dest_files=["res://.godot/imported/vehicle-convertible.obj-348a66739be3666d52089ab3aff08754.mesh", "res://.godot/imported/vehicle-convertible.obj-348a66739be3666d52089ab3aff08754.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

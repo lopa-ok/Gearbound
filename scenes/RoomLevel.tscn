@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=21 format=3 uid="uid://bchw5g5rjommu"]
 
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
 [ext_resource type="PackedScene" uid="uid://bya7fkjtkijcy" path="res://resources/FurnitureScenes/BookcaseLow.tscn" id="2_1pyxk"]
@@ -14,6 +14,8 @@
 [ext_resource type="PackedScene" uid="uid://bb0ngfm1t32dh" path="res://resources/FurnitureScenes/ramp.tscn" id="12_23ank"]
 [ext_resource type="PackedScene" uid="uid://ds0op5pbuonmy" path="res://resources/FurnitureScenes/CeilingLamp.tscn" id="13_417pg"]
 [ext_resource type="PackedScene" uid="uid://mtv8mfimxhys" path="res://resources/FurnitureScenes/WallLamp.tscn" id="14_ijewl"]
+[ext_resource type="PackedScene" uid="uid://3rc83b1nnclg" path="res://models/Furniture/GLTF format/cabinetBedDrawerTable.glb" id="15_va0de"]
+[ext_resource type="PackedScene" uid="uid://cxwu5hrl12fe6" path="res://scenes/Button.tscn" id="16_xhjsn"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -32,6 +34,7 @@ sky = SubResource("Sky_va0de")
 albedo_color = Color(0.52, 0.52, 0.52, 1)
 
 [node name="TestLevel" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.32701, -0.112216, -0.98814)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_xhjsn")
@@ -67,7 +70,7 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -8.49656, -0.332161, -10.9
 transform = Transform3D(1.78873e-07, 0, -15, 0, 15, 0, 15, 0, 1.78873e-07, 15.3273, -0.332161, -6.95133)
 
 [node name="wallWindow" parent="Level" instance=ExtResource("7_o74sw")]
-transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -4.351, -0.332, 37.33)
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -4.34729, -0.353696, 37.3517)
 
 [node name="wall3" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(-1.83588e-06, 0, -15, 0, 15, 0, 42, 0, -6.55671e-07, 15.273, -0.333, 4.11711)
@@ -88,7 +91,7 @@ transform = Transform3D(1.78873e-07, 0, -15, 0, 15, 0, 15, 0, 1.78873e-07, 15.25
 transform = Transform3D(40, 0, 0, 0, 15, 0, 0, 0, 15, 1.92, -0.332, -10.75)
 
 [node name="wall" parent="Level" instance=ExtResource("4_jcleb")]
-transform = Transform3D(-1.74846e-06, 0, -15, 0, 15, 0, 40, 0, -6.55671e-07, -12.394, -0.332152, -10.8194)
+transform = Transform3D(-1.74846e-06, 0, -15, 0, 15, 0, 40, 0, -6.55671e-07, -12.3948, -0.33291, -10.82)
 
 [node name="chairDesk" parent="Level" instance=ExtResource("3_jcleb")]
 transform = Transform3D(5.47047, 0, -13.9669, 0, 15, 0, 13.9669, 0, 5.47047, -8.1029, -0.618705, 7.91303)
@@ -100,7 +103,7 @@ transform = Transform3D(-6.55671e-07, 0, 15, 0, 15, 0, -15, 0, -6.55671e-07, -5.
 transform = Transform3D(-15, 0, -1.31134e-06, 0, 15, 0, 1.31134e-06, 0, -15, -2.95041, -0.545783, 18.8076)
 
 [node name="floorHalf" parent="Level" instance=ExtResource("12_23ank")]
-transform = Transform3D(6.5, 0, 0, 0, 5.89636, -2.7355, 0, 2.7355, 5.89636, -9.9392, 2.30573, 21.97)
+transform = Transform3D(6.5, 0, 0, 0, 5.89636, -2.7355, 0, 2.7355, 5.89636, -9.91585, 2.33669, 21.9986)
 
 [node name="floorHalf2" parent="Level" instance=ExtResource("12_23ank")]
 transform = Transform3D(-2.83341e-07, 2.96452, 5.76981, 1.08551e-08, 5.76981, -2.96452, -6.48684, -1.19833e-07, -2.56982e-07, 2.25795, -0.602212, 29.5611)
@@ -113,3 +116,9 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 7.40432, 12.7878, -11.4683
 
 [node name="lampSquareCeiling2" parent="Level" instance=ExtResource("13_417pg")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0.656125, 15.5067, 17.5164)
+
+[node name="cabinetBedDrawerTable" parent="Level" instance=ExtResource("15_va0de")]
+transform = Transform3D(-14.9996, 0.103602, -0.00573235, 0.103611, 14.9996, -0.0259071, 0.00555325, -0.0259461, -15, 1.29581, -1.06918, 32.3857)
+
+[node name="VideoButton" parent="." instance=ExtResource("16_xhjsn")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 5.87464, -0.459907, 6.58627)

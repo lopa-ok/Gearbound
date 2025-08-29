@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://cxwu5hrl12fe6"]
+
+[ext_resource type="PackedScene" uid="uid://ddy6btqbaqchq" path="res://resources/Cool/Models/GLB format/button-floor-square.glb" id="1_1xt0e"]
+[ext_resource type="Script" uid="uid://dxbxjkhdt5ogm" path="res://scenes/scripts/button.gd" id="2_rtit6"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ywcaw"]
+size = Vector3(0.80426, 0.241112, 0.824188)
+
+[node name="button-floor-square2" instance=ExtResource("1_1xt0e")]
+
+[node name="Area3D" type="Area3D" parent="." index="2"]
+script = ExtResource("2_rtit6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0112076, 0.101454, -0.055708)
+shape = SubResource("BoxShape3D_ywcaw")
