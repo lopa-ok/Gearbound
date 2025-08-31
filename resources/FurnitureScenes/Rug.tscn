@@ -1,0 +1,71 @@
+[gd_scene load_steps=5 format=4 uid="uid://ciuuwxjsv6aqx"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_du461"]
+resource_name = "carpet"
+albedo_color = Color(0.974694, 0.639944, 0.620211, 1)
+emission_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jbe8h"]
+resource_name = "carpetDarker"
+albedo_color = Color(0.802457, 0.581887, 0.570462, 1)
+emission_enabled = true
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_fbiit"]
+_surfaces = [{
+"aabb": AABB(0, 0, -0.92, 1.57, 0.01, 0.92),
+"format": 34896613377,
+"index_count": 60,
+"index_data": PackedByteArray("AAABAAIAAgABAAMAAwABAAAAAgAEAAAAAAAEAAUABQAEAAIAAwAGAAIAAgAGAAUABgADAAcABwAFAAYABwAIAAUACQAHAAMACAAKAAUACwAKAAkAAwALAAkACwAFAAoAAAALAAMABQALAAAADAANAA4ADgAPAAwA"),
+"name": "carpet",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 16,
+"vertex_data": PackedByteArray("//8AAAAAAAAAAAAAAAAAAAAAAAD//wAAAAD//wAAAAD//wAA//8AAP///////wAAAAD/////AACHEv//X+AAAHft//9f4AAAhxL//58fAAB37f//nx8AAP////8AAAAASeX//2rSAAC1Gv//atIAALUa//+ULQAASeX//5QtAAA=")
+}, {
+"aabb": AABB(0.113645, 0.01, -0.806355, 1.34271, 1e-05, 0.692709),
+"format": 34896613377,
+"index_count": 24,
+"index_data": PackedByteArray("AAABAAIAAgADAAAABAACAAEAAgAFAAMAAQAGAAQABQAHAAMABgAHAAQABgADAAcA"),
+"name": "carpetDarker",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 8,
+"vertex_data": PackedByteArray("AAAAAP//AAAAAAAAAAAAAJAJAAB17QAA//8AAP//AACQCQAAiRIAAG72AAB17QAA//8AAAAAAABu9gAAiRIAAA==")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_7rmsn"]
+resource_name = "rugRectangle_Mesh rugRectangle"
+_surfaces = [{
+"aabb": AABB(0, 0, -0.92, 1.57, 0.01, 0.92),
+"attribute_data": PackedByteArray("AAAAAP9/AAD/f6GDAAChg/9/M4L/f6GDAAChgwAAM4L/f6GD/38AAEOJX3P//6GDQ4lCELv2X3P//wAAu/ZCEP40M4L/fzOC/3+hg/40oYP//zOC//+hg/9/oYP/fzOCAMuhg/9/oYP/fzOCAMszgqTyMWxajTFsWo1wF6TycBc="),
+"format": 34896613399,
+"index_count": 60,
+"index_data": PackedByteArray("AAABAAIAAgADAAAABAAFAAYABgAHAAQACAAJAAoACgALAAgADAAKAAkACgANAAsACQAOAAwADQAPAAsADgAPAAwADgALAA8AEAARABIAEgATABAAFAAVABYAFgAXABQAGAAZABoAGgAbABgAHAAdAB4AHgAfABwA"),
+"material": SubResource("StandardMaterial3D_du461"),
+"name": "carpet",
+"primitive": 3,
+"uv_scale": Vector4(123.622, 70.4409, 0, 0),
+"vertex_count": 32,
+"vertex_data": PackedByteArray("//8AAAAA//8AAAAAAAD//wAAAAD///////8AAP////8AAP//AAD//wAAAAAAAP////8AAAAA////////AAD//wAA//////+/AAD//wAA/7+HEv//X+D/v/////////+/hxL//58f/7937f//X+D/v/////8AAP+/d+3//58f/78AAP//AAD/vwAA//////+/AAAAAP///78AAAAAAAD/v////////wCA//8AAP//AIAAAAAA//8AgAAA/////wCA//8AAAAA/7///wAA////v/////////+//////wAA/79J5f//atL/v7Ua//9q0v+/tRr//5Qt/79J5f//lC3/v/9//z//f/8//3//P/9//z//f////3////9/////f///////f////3////9/////f/7//3////9/////f////3//f////3////9/////f////3////9/////f////3////9/AAD/fwAA/38AAP9/AAD///9/////f////3////9/")
+}, {
+"aabb": AABB(0.113645, 0.01, -0.806355, 1.34271, 1e-05, 0.692709),
+"attribute_data": PackedByteArray("/ImIcfyJAABljlBp//+IcWWOOAiW+1Bp//8AAJb7OAg="),
+"format": 34896613399,
+"index_count": 24,
+"index_data": PackedByteArray("AAABAAIAAgADAAAABAACAAEAAgAFAAMAAQAGAAQABQAHAAMABgAHAAQABgADAAcA"),
+"material": SubResource("StandardMaterial3D_jbe8h"),
+"name": "carpetDarker",
+"primitive": 3,
+"uv_scale": Vector4(114.674, 61.4925, 0, 0),
+"vertex_count": 8,
+"vertex_data": PackedByteArray("AAAAAP///78AAAAAAAD/v5AJAAB17f+///8AAP///7+QCQAAiRL/v272AAB17f+///8AAAAA/79u9gAAiRL/v////3/+//9/////f////3/+//9/////f/7//3/+//9/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_fbiit")
+
+[node name="rugRectangle" type="Node3D"]
+
+[node name="rugRectangle(Clone)" type="MeshInstance3D" parent="."]
+mesh = SubResource("ArrayMesh_7rmsn")
+skeleton = NodePath("")

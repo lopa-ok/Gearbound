@@ -1,5 +1,6 @@
-[gd_scene load_steps=21 format=3 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=23 format=3 uid="uid://bchw5g5rjommu"]
 
+[ext_resource type="Script" uid="uid://0qhdd6qs7nag" path="res://scenes/scripts/room_level.gd" id="1_a4r2b"]
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
 [ext_resource type="PackedScene" uid="uid://bya7fkjtkijcy" path="res://resources/FurnitureScenes/BookcaseLow.tscn" id="2_1pyxk"]
 [ext_resource type="PackedScene" uid="uid://c2dlr2udwovwb" path="res://resources/FurnitureScenes/Desk.tscn" id="3_0cs01"]
@@ -16,6 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://mtv8mfimxhys" path="res://resources/FurnitureScenes/WallLamp.tscn" id="14_ijewl"]
 [ext_resource type="PackedScene" uid="uid://3rc83b1nnclg" path="res://models/Furniture/GLTF format/cabinetBedDrawerTable.glb" id="15_va0de"]
 [ext_resource type="PackedScene" uid="uid://cxwu5hrl12fe6" path="res://scenes/Button.tscn" id="16_xhjsn"]
+[ext_resource type="PackedScene" uid="uid://ciuuwxjsv6aqx" path="res://resources/FurnitureScenes/Rug.tscn" id="17_qldhk"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -35,6 +37,7 @@ albedo_color = Color(0.52, 0.52, 0.52, 1)
 
 [node name="TestLevel" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.32701, -0.112216, -0.98814)
+script = ExtResource("1_a4r2b")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_xhjsn")
@@ -122,3 +125,6 @@ transform = Transform3D(-14.9996, 0.103602, -0.00573235, 0.103611, 14.9996, -0.0
 
 [node name="VideoButton" parent="." instance=ExtResource("16_xhjsn")]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 5.87464, -0.459907, 6.58627)
+
+[node name="rugRectangle" parent="." instance=ExtResource("17_qldhk")]
+transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -1.96155, -0.447377, -1.65917)

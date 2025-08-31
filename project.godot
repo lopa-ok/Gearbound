@@ -11,13 +11,14 @@ config_version=5
 [application]
 
 config/name="Move faster"
-run/main_scene="uid://bchw5g5rjommu"
+run/main_scene="uid://f7uy8ai71bmr"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
 BgMusic="*res://scenes/BgMusic.tscn"
+Transition="*res://scenes/Transition.tscn"
 
 [display]
 

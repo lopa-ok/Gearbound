@@ -3,8 +3,11 @@
 [ext_resource type="Script" uid="uid://b24ehmtfu1tyt" path="res://AudioSlider.gd" id="1_l1ggx"]
 
 [node name="HSlider" type="HSlider"]
-offset_right = 8.0
-offset_bottom = 16.0
+offset_left = 243.0
+offset_top = 194.0
+offset_right = 432.0
+offset_bottom = 218.0
 max_value = 1.0
 step = 0.001
 script = ExtResource("1_l1ggx")
+bus_name = "Music"
