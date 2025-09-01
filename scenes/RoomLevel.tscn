@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://cxfa4l5brxvne" path="res://resources/FurnitureScenes/WallCorner.tscn" id="6_6sfjc"]
 [ext_resource type="PackedScene" uid="uid://cwktp56vafgil" path="res://resources/FurnitureScenes/WallWindow.tscn" id="7_o74sw"]
 [ext_resource type="PackedScene" uid="uid://8e5qowsgr6lu" path="res://resources/FurnitureScenes/Door.tscn" id="8_opvuv"]
-[ext_resource type="PackedScene" uid="uid://dfnrv365qegho" path="res://resources/FurnitureScenes/Laptop.tscn" id="9_7vmnu"]
+[ext_resource type="PackedScene" uid="uid://dfnrv365qegho" path="res://scenes/Laptop.tscn" id="9_7vmnu"]
 [ext_resource type="PackedScene" uid="uid://y06d54nykjhg" path="res://resources/FurnitureScenes/BunkBed.tscn" id="11_2cvul"]
 [ext_resource type="PackedScene" uid="uid://bb0ngfm1t32dh" path="res://resources/FurnitureScenes/ramp.tscn" id="12_23ank"]
 [ext_resource type="PackedScene" uid="uid://ds0op5pbuonmy" path="res://resources/FurnitureScenes/CeilingLamp.tscn" id="13_417pg"]

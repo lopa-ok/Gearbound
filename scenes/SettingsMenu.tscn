@@ -1,0 +1,140 @@
+[gd_scene load_steps=7 format=3 uid="uid://sbd0nrdsjkyx"]
+
+[ext_resource type="Theme" uid="uid://dkf88k4vtclv1" path="res://scenes/MainMenu.tres" id="1_1yw23"]
+[ext_resource type="PackedScene" uid="uid://bc3i7nrjh6vge" path="res://scripts/AudioSlider.tscn" id="2_dd8lr"]
+[ext_resource type="Script" uid="uid://bgoxfl1eu2acn" path="res://scenes/scripts/settings_menu.gd" id="2_t7ar5"]
+[ext_resource type="PackedScene" uid="uid://bdmyc3lbwn8df" path="res://scripts/AudioSliderSFX.tscn" id="4_t7ar5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1yw23"]
+bg_color = Color(0.639216, 0.360784, 0.203922, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.192157, 0.0823529, 0.0666667, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t7ar5"]
+bg_color = Color(1, 0.92549, 0.694118, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.192157, 0.0823529, 0.0666667, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_size = 2
+
+[node name="SettingsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 772.0
+offset_top = 780.0
+offset_right = 1148.0
+offset_bottom = 780.0
+theme = ExtResource("1_1yw23")
+script = ExtResource("2_t7ar5")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -516.0
+offset_top = -413.0
+offset_right = 516.0
+offset_bottom = 254.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1yw23")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.239362
+anchor_right = 0.736702
+offset_top = -389.0
+offset_bottom = -329.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 50
+text = "Options"
+metadata/_edit_use_anchors_ = true
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.239362
+anchor_right = 0.736702
+offset_left = -277.0
+offset_top = -246.0
+offset_right = -343.0
+offset_bottom = -195.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 42
+text = "Music"
+
+[node name="HSlider" parent="Label2" instance=ExtResource("2_dd8lr")]
+layout_mode = 0
+offset_left = 140.0
+offset_top = 1.0
+offset_right = 795.0
+offset_bottom = 49.0
+
+[node name="MainMenu" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.0132979
+anchor_right = 0.986702
+offset_top = 145.0
+offset_bottom = 222.0
+grow_horizontal = 2
+grow_vertical = 0
+metadata/_edit_use_anchors_ = true
+
+[node name="Back" type="Button" parent="MainMenu"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_t7ar5")
+text = "Back
+"
+
+[node name="Control" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label3" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.239362
+anchor_right = 0.736702
+offset_left = -275.0
+offset_top = -160.0
+offset_right = -341.0
+offset_bottom = -109.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 42
+text = "SFX"
+
+[node name="sfx" parent="." instance=ExtResource("4_t7ar5")]
+layout_mode = 0
+offset_left = -47.0
+offset_top = -165.0
+offset_right = 608.0
+offset_bottom = -117.0
+
+[connection signal="pressed" from="MainMenu/Back" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="MainMenu/Back" to="MainMenu" method="_on_quit_button_pressed"]

@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://bc3i7nrjh6vge"]
+[gd_scene load_steps=8 format=3 uid="uid://bdmyc3lbwn8df"]
 
-[ext_resource type="Texture2D" uid="uid://d138opne58ykv" path="res://resources/Textures/grabber_rect_48x24.png" id="1_4cqrr"]
-[ext_resource type="Script" uid="uid://b24ehmtfu1tyt" path="res://AudioSlider.gd" id="1_l1ggx"]
-[ext_resource type="Texture2D" uid="uid://d5xut51faujr" path="res://resources/Textures/grabber_rect_48x24_hover.png" id="2_fd67t"]
+[ext_resource type="Texture2D" uid="uid://d138opne58ykv" path="res://resources/Textures/grabber_rect_48x24.png" id="1_rypv5"]
+[ext_resource type="Texture2D" uid="uid://d5xut51faujr" path="res://resources/Textures/grabber_rect_48x24_hover.png" id="2_e3n4s"]
+[ext_resource type="Script" uid="uid://b24ehmtfu1tyt" path="res://AudioSlider.gd" id="3_o4vf3"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_dyks4"]
+load_path = "res://.godot/imported/grabber_rect.png-a9a3540937cc3bd41e4c3b461b74c4c2.ctex"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l1ggx"]
 bg_color = Color(1, 0.92549, 0.694118, 1)
@@ -27,8 +28,8 @@ offset_left = 243.0
 offset_top = 194.0
 offset_right = 432.0
 offset_bottom = 218.0
-theme_override_icons/grabber = ExtResource("1_4cqrr")
-theme_override_icons/grabber_highlight = ExtResource("2_fd67t")
+theme_override_icons/grabber = ExtResource("1_rypv5")
+theme_override_icons/grabber_highlight = ExtResource("2_e3n4s")
 theme_override_icons/grabber_disabled = SubResource("CompressedTexture2D_dyks4")
 theme_override_icons/tick = SubResource("CompressedTexture2D_dyks4")
 theme_override_styles/slider = SubResource("StyleBoxFlat_l1ggx")
@@ -36,5 +37,5 @@ theme_override_styles/grabber_area = SubResource("StyleBoxFlat_t6qcu")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_etewl")
 max_value = 1.0
 step = 0.001
-script = ExtResource("1_l1ggx")
-bus_name = "Music"
+script = ExtResource("3_o4vf3")
+bus_name = "SFX"

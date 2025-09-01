@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=4 uid="uid://dfnrv365qegho"]
 
-[ext_resource type="Script" uid="uid://s7turrewdut3" path="res://resources/FurnitureScenes/InteractShow.gd" id="1_23ewk"]
-[ext_resource type="FontFile" uid="uid://d40535qpbpsw" path="res://models/Keyboard & Mouse/Fonts/kenney_input_keyboard_&_mouse.ttf" id="1_xo4vf"]
+[ext_resource type="Script" uid="uid://s7turrewdut3" path="res://resources/FurnitureScenes/InteractShow.gd" id="1_i8612"]
+[ext_resource type="FontFile" uid="uid://d40535qpbpsw" path="res://models/Keyboard & Mouse/Fonts/kenney_input_keyboard_&_mouse.ttf" id="2_1e162"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vqw26"]
 resource_name = "metalDark"
@@ -113,7 +113,7 @@ skeleton = NodePath("")
 shape = SubResource("ConcavePolygonShape3D_0rblk")
 
 [node name="Area3D" type="Area3D" parent="."]
-script = ExtResource("1_23ewk")
+script = ExtResource("1_i8612")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.128923, 0.200103, -0.057536)
@@ -122,6 +122,6 @@ shape = SubResource("BoxShape3D_xo4vf")
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(0.00729292, 0, 0, 0, 0.00729292, 0, 0, 0, 1, 0.136729, 0.25361, -0.236778)
 text = ""
-font = ExtResource("1_xo4vf")
+font = ExtResource("2_1e162")
 font_size = 4096
 outline_size = 0
