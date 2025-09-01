@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://f7uy8ai71bmr"]
+[gd_scene load_steps=27 format=3 uid="uid://f7uy8ai71bmr"]
 
 [ext_resource type="PackedScene" uid="uid://cskp5l2xnoth1" path="res://scenes/DummyPlayer.tscn" id="1_tdapf"]
 [ext_resource type="PackedScene" uid="uid://bya7fkjtkijcy" path="res://resources/FurnitureScenes/BookcaseLow.tscn" id="2_tdapf"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://ciuuwxjsv6aqx" path="res://resources/FurnitureScenes/Rug.tscn" id="17_ynb5t"]
 [ext_resource type="Theme" uid="uid://dkf88k4vtclv1" path="res://scenes/MainMenu.tres" id="19_7shrw"]
 [ext_resource type="Texture2D" uid="uid://dnk06wd4bpxj2" path="res://resources/Logo.png" id="19_v41fp"]
+[ext_resource type="PackedScene" uid="uid://b8cecouhsd50y" path="res://resources/FurnitureScenes/CeilingFan.tscn" id="21_viowm"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -122,7 +123,7 @@ transform = Transform3D(-15, 0, -1.31134e-06, 0, 15, 0, 1.31134e-06, 0, -15, -2.
 transform = Transform3D(6.5, 0, 0, 0, 5.89636, -2.7355, 0, 2.7355, 5.89636, -9.91585, 2.33669, 21.9986)
 
 [node name="floorHalf2" parent="Level" instance=ExtResource("12_os5dr")]
-transform = Transform3D(-2.83341e-07, 2.96452, 5.76981, 1.08551e-08, 5.76981, -2.96452, -6.48684, -1.19833e-07, -2.56982e-07, 2.25795, -0.602212, 29.5611)
+transform = Transform3D(-2.83341e-07, 2.96452, 5.76981, 1.08551e-08, 5.76981, -2.96452, -6.48684, -1.19833e-07, -2.56982e-07, 2.25795, -0.62635, 29.5611)
 
 [node name="floorHalf3" parent="Level" instance=ExtResource("12_os5dr")]
 transform = Transform3D(100, 0, 0, 0, 1, 0, 0, 0, 50, -15.1666, 18.9657, 37.2214)
@@ -137,7 +138,7 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0.656125, 15.5067, 17.5164
 transform = Transform3D(-14.9996, 0.103602, -0.00573235, 0.103611, 14.9996, -0.0259071, 0.00555325, -0.0259461, -15, 1.29581, -1.06918, 32.3857)
 
 [node name="VideoButton" parent="." instance=ExtResource("16_d3xvo")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 5.87464, -0.459907, 6.58627)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 4.78453, -0.459907, 5.8447)
 
 [node name="rugRectangle" parent="." instance=ExtResource("17_ynb5t")]
 transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -1.96155, -0.447377, -1.65917)
@@ -150,14 +151,16 @@ fov = 71.5905
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -588.0
-offset_top = -344.0
-offset_right = 591.0
-offset_bottom = 835.0
+offset_left = -605.0
+offset_top = -332.0
+offset_right = 574.0
+offset_bottom = 847.0
 grow_horizontal = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 texture = ExtResource("19_v41fp")
+expand_mode = 5
+stretch_mode = 4
 
 [node name="Control" type="Control" parent="Camera3D"]
 layout_mode = 3
@@ -200,6 +203,10 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_7shrw")
 text = "Quit"
+
+[node name="ceilingFan" parent="." instance=ExtResource("21_viowm")]
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 1.51116, 18.6031, 16.6611)
+visible = true
 
 [connection signal="pressed" from="Camera3D/Control/MainMenu/NewGameButton" to="Camera3D/Control/MainMenu" method="_on_new_game_button_pressed"]
 [connection signal="pressed" from="Camera3D/Control/MainMenu/SettingsButton" to="Camera3D/Control/MainMenu" method="_on_settings_button_pressed"]

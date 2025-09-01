@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=24 format=3 uid="uid://bchw5g5rjommu"]
 
 [ext_resource type="Script" uid="uid://0qhdd6qs7nag" path="res://scenes/scripts/room_level.gd" id="1_a4r2b"]
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://3rc83b1nnclg" path="res://models/Furniture/GLTF format/cabinetBedDrawerTable.glb" id="15_va0de"]
 [ext_resource type="PackedScene" uid="uid://cxwu5hrl12fe6" path="res://scenes/Button.tscn" id="16_xhjsn"]
 [ext_resource type="PackedScene" uid="uid://ciuuwxjsv6aqx" path="res://resources/FurnitureScenes/Rug.tscn" id="17_qldhk"]
+[ext_resource type="PackedScene" uid="uid://b8cecouhsd50y" path="res://resources/FurnitureScenes/CeilingFan.tscn" id="19_qn773"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -55,7 +56,7 @@ size = Vector3(1000, 1, 1000)
 material = SubResource("StandardMaterial3D_8xg12")
 
 [node name="Player" parent="." groups=["player"] instance=ExtResource("1_bktfv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.56174, 0.335056, 1.01838)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.03357, 0.00130761, 1.01838)
 center_of_mass = Vector3(0, -0.11, -0.27)
 
 [node name="Level" type="Node3D" parent="."]
@@ -120,11 +121,15 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 7.40432, 12.7878, -11.4683
 [node name="lampSquareCeiling2" parent="Level" instance=ExtResource("13_417pg")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0.656125, 15.5067, 17.5164)
 
+[node name="ceilingFan" parent="Level" instance=ExtResource("19_qn773")]
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 1.51116, 18.6031, 16.6611)
+visible = true
+
+[node name="rugRectangle" parent="Level" instance=ExtResource("17_qldhk")]
+transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -1.96155, -0.447377, -1.65917)
+
 [node name="cabinetBedDrawerTable" parent="Level" instance=ExtResource("15_va0de")]
 transform = Transform3D(-14.9996, 0.103602, -0.00573235, 0.103611, 14.9996, -0.0259071, 0.00555325, -0.0259461, -15, 1.29581, -1.06918, 32.3857)
 
 [node name="VideoButton" parent="." instance=ExtResource("16_xhjsn")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 5.87464, -0.459907, 6.58627)
-
-[node name="rugRectangle" parent="." instance=ExtResource("17_qldhk")]
-transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -1.96155, -0.447377, -1.65917)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 5.04098, -0.459907, 5.79124)

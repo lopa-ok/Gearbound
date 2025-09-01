@@ -42,18 +42,15 @@ script = ExtResource("2_t7ar5")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -516.0
+anchors_preset = -1
+anchor_left = -0.87234
+anchor_right = 1.87234
 offset_top = -413.0
-offset_right = 516.0
 offset_bottom = 254.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1yw23")
+metadata/_edit_use_anchors_ = true
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 1

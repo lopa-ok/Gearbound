@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://csq5ubarn2640"]
+
+[ext_resource type="Script" uid="uid://drybfu6aixgg6" path="res://scenes/scripts/floating_screen.gd" id="1_74y82"]
+[ext_resource type="VideoStream" uid="uid://b716nkq2fuf5l" path="res://resources/Videos/Intro.ogv" id="2_7ulve"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_tt2xb"]
+
+[node name="FloatingScreen" type="Node3D"]
+script = ExtResource("1_74y82")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(-3, 0, -4.52987e-07, 0, 3, 0, 4.52987e-07, 0, -3, 0, 0.906793, 4.02537)
+mesh = SubResource("QuadMesh_tt2xb")
+
+[node name="SubViewport" type="SubViewport" parent="."]
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="SubViewport"]
+offset_right = 40.0
+offset_bottom = 40.0
+stream = ExtResource("2_7ulve")
+bus = &"SFX"

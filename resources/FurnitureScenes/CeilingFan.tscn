@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8cecouhsd50y"]
+
+[ext_resource type="PackedScene" uid="uid://cr3ntfeq4ktg5" path="res://models/Furniture/GLTF format/ceilingFan.glb" id="1_hd88n"]
+[ext_resource type="Script" uid="uid://bdgvtqvs8kijv" path="res://scenes/scripts/ceiling_fan.gd" id="2_u14hk"]
+
+[node name="ceilingFan" instance=ExtResource("1_hd88n")]
+visible = false
+script = ExtResource("2_u14hk")
