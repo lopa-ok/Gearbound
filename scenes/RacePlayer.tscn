@@ -204,8 +204,8 @@ use_as_traction = true
 use_as_steering = true
 wheel_roll_influence = 0.01
 wheel_rest_length = 0.2
-wheel_friction_slip = 2.5
-suspension_travel = 0.4
+wheel_friction_slip = 70.0
+suspension_travel = 0.3
 suspension_stiffness = 30.0
 
 [node name="Mesh" type="MeshInstance3D" parent="FrontLeft"]
@@ -219,8 +219,8 @@ use_as_traction = true
 use_as_steering = true
 wheel_roll_influence = 0.01
 wheel_rest_length = 0.2
-wheel_friction_slip = 2.5
-suspension_travel = 0.4
+wheel_friction_slip = 70.0
+suspension_travel = 0.3
 suspension_stiffness = 30.0
 
 [node name="Mesh" type="MeshInstance3D" parent="FrontRight"]
@@ -233,8 +233,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.500457, 0.3, -0.930114)
 use_as_traction = true
 wheel_roll_influence = 0.01
 wheel_rest_length = 0.2
-wheel_friction_slip = 2.5
-suspension_travel = 0.4
+wheel_friction_slip = 70.0
+suspension_travel = 0.3
 suspension_stiffness = 30.0
 
 [node name="Mesh" type="MeshInstance3D" parent="BackLeft"]
@@ -247,8 +247,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.3, -0.930114)
 use_as_traction = true
 wheel_roll_influence = 0.01
 wheel_rest_length = 0.2
-wheel_friction_slip = 2.5
-suspension_travel = 0.4
+wheel_friction_slip = 70.0
+suspension_travel = 0.3
 suspension_stiffness = 30.0
 
 [node name="Mesh" type="MeshInstance3D" parent="BackRight"]

@@ -9,7 +9,7 @@
 script = ExtResource("1_74y82")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(-3, 0, -4.52987e-07, 0, 3, 0, 4.52987e-07, 0, -3, 0, 0.906793, 4.02537)
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -0.00946808, 0.875676, -8.06323)
 mesh = SubResource("QuadMesh_tt2xb")
 
 [node name="SubViewport" type="SubViewport" parent="."]

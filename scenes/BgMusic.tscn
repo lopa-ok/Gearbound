@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://d3tvlvyokda4f"]
+[gd_scene load_steps=3 format=3 uid="uid://d3tvlvyokda4f"]
 
 [ext_resource type="AudioStream" uid="uid://dfom844xkjvbw" path="res://resources/Music/MainTrack.mp3" id="1_8ui5v"]
+[ext_resource type="Script" uid="uid://0lu8byc8au6r" path="res://scenes/bg_music.gd" id="2_jqmcj"]
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer"]
 stream = ExtResource("1_8ui5v")
 autoplay = true
 bus = &"Music"
+script = ExtResource("2_jqmcj")

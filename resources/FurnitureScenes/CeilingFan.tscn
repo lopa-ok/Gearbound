@@ -1,8 +1,26 @@
-[gd_scene load_steps=3 format=3 uid="uid://b8cecouhsd50y"]
+[gd_scene load_steps=5 format=3 uid="uid://b8cecouhsd50y"]
 
 [ext_resource type="PackedScene" uid="uid://cr3ntfeq4ktg5" path="res://models/Furniture/GLTF format/ceilingFan.glb" id="1_hd88n"]
 [ext_resource type="Script" uid="uid://bdgvtqvs8kijv" path="res://scenes/scripts/ceiling_fan.gd" id="2_u14hk"]
+[ext_resource type="Script" uid="uid://drit3c7y02asd" path="res://scripts/OmniLight.gd" id="3_5547b"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5547b"]
+emission_enabled = true
+emission = Color(0.911802, 0.785594, 0.462521, 1)
 
 [node name="ceilingFan" instance=ExtResource("1_hd88n")]
-visible = false
 script = ExtResource("2_u14hk")
+
+[node name="ceilingFan(Clone)" parent="." index="0"]
+surface_material_override/1 = SubResource("StandardMaterial3D_5547b")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.454555, 0)
+visible = false
+light_color = Color(0.917647, 0.921569, 0.458824, 1)
+light_energy = 0.976
+shadow_enabled = true
+shadow_normal_bias = 0.134
+omni_range = 35.759
+omni_attenuation = 0.711
+script = ExtResource("3_5547b")

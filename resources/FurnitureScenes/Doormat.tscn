@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://csg5c1qmltp8i"]
+
+[ext_resource type="PackedScene" uid="uid://02d5t0wc6ddm" path="res://models/Furniture/GLTF format/rugDoormat.glb" id="1_5ol1e"]
+
+[node name="rugDoormat" instance=ExtResource("1_5ol1e")]

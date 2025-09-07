@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://blugjlxuqf7mm"]
+
+[ext_resource type="PackedScene" uid="uid://2av16h4ut14t" path="res://models/Furniture/GLTF format/televisionVintage.glb" id="1_axjgs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_axjgs"]
+emission_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iwgo7"]
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+
+[node name="televisionVintage" instance=ExtResource("1_axjgs")]
+
+[node name="televisionVintage(Clone)" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.000451803)
+surface_material_override/0 = SubResource("StandardMaterial3D_axjgs")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.150954, 0.130707, -0.016182)
+size = Vector3(0.277161, 0.252502, 0.001)
+material = SubResource("StandardMaterial3D_iwgo7")

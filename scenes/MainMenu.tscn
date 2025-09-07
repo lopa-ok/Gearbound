@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://f7uy8ai71bmr"]
+[gd_scene load_steps=28 format=3 uid="uid://f7uy8ai71bmr"]
 
 [ext_resource type="PackedScene" uid="uid://cskp5l2xnoth1" path="res://scenes/DummyPlayer.tscn" id="1_tdapf"]
 [ext_resource type="PackedScene" uid="uid://bya7fkjtkijcy" path="res://resources/FurnitureScenes/BookcaseLow.tscn" id="2_tdapf"]
@@ -21,6 +21,7 @@
 [ext_resource type="Theme" uid="uid://dkf88k4vtclv1" path="res://scenes/MainMenu.tres" id="19_7shrw"]
 [ext_resource type="Texture2D" uid="uid://dnk06wd4bpxj2" path="res://resources/Logo.png" id="19_v41fp"]
 [ext_resource type="PackedScene" uid="uid://b8cecouhsd50y" path="res://resources/FurnitureScenes/CeilingFan.tscn" id="21_viowm"]
+[ext_resource type="Script" uid="uid://drit3c7y02asd" path="res://scripts/OmniLight.gd" id="22_1n6yq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -133,6 +134,7 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 7.40432, 12.7878, -11.4683
 
 [node name="lampSquareCeiling2" parent="Level" instance=ExtResource("14_lw0hr")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0.656125, 15.5067, 17.5164)
+visible = false
 
 [node name="cabinetBedDrawerTable" parent="Level" instance=ExtResource("15_gnvml")]
 transform = Transform3D(-14.9996, 0.103602, -0.00573235, 0.103611, 14.9996, -0.0259071, 0.00555325, -0.0259461, -15, 1.29581, -1.06918, 32.3857)
@@ -206,7 +208,16 @@ text = "Quit"
 
 [node name="ceilingFan" parent="." instance=ExtResource("21_viowm")]
 transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 1.51116, 18.6031, 16.6611)
-visible = true
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4487, 13.7504, 16.5925)
+light_color = Color(1, 0.866667, 0.666667, 1)
+light_energy = 0.976
+shadow_enabled = true
+shadow_normal_bias = 0.134
+omni_range = 68.351
+omni_attenuation = 0.711
+script = ExtResource("22_1n6yq")
 
 [connection signal="pressed" from="Camera3D/Control/MainMenu/NewGameButton" to="Camera3D/Control/MainMenu" method="_on_new_game_button_pressed"]
 [connection signal="pressed" from="Camera3D/Control/MainMenu/SettingsButton" to="Camera3D/Control/MainMenu" method="_on_settings_button_pressed"]

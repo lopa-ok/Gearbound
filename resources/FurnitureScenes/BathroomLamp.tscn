@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgg1ym2ny1o0g"]
+
+[ext_resource type="PackedScene" uid="uid://ck4cmm002ho57" path="res://models/Furniture/GLTF format/lampSquareCeiling.glb" id="1_jqtdt"]
+[ext_resource type="Script" uid="uid://drit3c7y02asd" path="res://scripts/OmniLight.gd" id="2_sodxo"]
+
+[node name="lampSquareCeiling" instance=ExtResource("1_jqtdt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.74562e-05, 0, 0.0147646)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0578211, -0.159002, -0.0589111)
+visible = false
+light_energy = 0.976
+shadow_enabled = true
+shadow_normal_bias = 0.134
+omni_range = 27.409
+omni_attenuation = 0.711
+script = ExtResource("2_sodxo")

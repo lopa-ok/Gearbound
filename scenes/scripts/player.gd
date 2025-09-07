@@ -1,7 +1,8 @@
 extends VehicleBody3D
 
-const MAX_STEER = 0.8
+const MAX_STEER = 0.6
 const ENGINE_POWER = 400
+const MAX_SPEED = 35.0   # 🚗 Maximum speed limit
 
 # Engine sound settings
 const BASE_PITCH := 0.8
@@ -35,19 +36,40 @@ var camera_rotation := Vector3(-3.1, 180, 0)
 
 func _ready():
 	camera_3d.rotation_degrees = camera_rotation
-	# Initialize engine sound but don't play yet
 	engine_sound.pitch_scale = BASE_PITCH
 	engine_sound.volume_db = ROLLING_VOLUME
 
-func _process(delta):
-	# --- CAR CONTROLS ---
-	steering = move_toward(steering, Input.get_axis("ui_right", "ui_left") * MAX_STEER, delta * 2.5)
-	engine_force = Input.get_axis("ui_down", "ui_up") * ENGINE_POWER
-	
-	# --- CAMERA FOLLOW ---
+func _physics_process(delta):
+	update_controls(delta)
+	update_camera(delta)
+	update_engine_audio(delta)
+
+func update_controls(delta):
+	var speed = linear_velocity.length()
+
+	# --- SPEED-SENSITIVE STEERING ---
+	var speed_factor = clamp(1.0 - (speed / MAX_SPEED), 0.2, 1.0)
+	var dynamic_max_steer = MAX_STEER * speed_factor
+	var steering_response = lerp(6.0, 2.0, speed / MAX_SPEED)
+
+	steering = move_toward(
+		steering,
+		Input.get_axis("ui_right", "ui_left") * dynamic_max_steer,
+		delta * steering_response
+	)
+
+	# --- ENGINE FORCE ---
+	var throttle_input = Input.get_axis("ui_down", "ui_up")
+	if speed < MAX_SPEED or throttle_input < 0.0:  # allow braking but no accel beyond limit
+		engine_force = throttle_input * ENGINE_POWER
+	else:
+		engine_force = 0.0
+
+func update_camera(delta):
+	# Camera pivot follows car
 	camera_pivot.global_position = camera_pivot.global_position.lerp(global_position, delta * 20.0)
 	camera_pivot.transform = camera_pivot.transform.interpolate_with(transform, delta * 5.0)
-	
+
 	# Camera collision check
 	ray.target_position = camera_offset
 	var desired_pos = camera_offset
@@ -56,13 +78,10 @@ func _process(delta):
 		var pivot_pos = camera_pivot.global_position
 		var dir = camera_offset.normalized()
 		var dist = pivot_pos.distance_to(hit_pos) - 0.3
-		desired_pos = dir * dist
-	
+		desired_pos = dir * max(1.0, dist)  # never closer than 1m
+
 	# Smooth camera movement
 	camera_3d.position = camera_3d.position.lerp(desired_pos, delta * 10.0)
-	
-	# --- IMPROVED ENGINE SOUND ---
-	update_engine_audio(delta)
 
 func update_engine_audio(delta):
 	var throttle_input = Input.get_axis("ui_down", "ui_up")
@@ -70,22 +89,15 @@ func update_engine_audio(delta):
 	var abs_throttle = abs(throttle_input)
 	var current_unix_time = Time.get_time_dict_from_system().get("unix", 0)
 	
-	# Track throttle duration
 	if abs_throttle > 0.05:
 		if not is_throttling:
-			# Just started throttling
 			throttle_start_time = current_unix_time
 			is_throttling = true
 		throttle_duration = current_unix_time - throttle_start_time
-		engine_momentum = 1.0  # Full engine momentum when throttling
+		engine_momentum = 1.0
 	else:
 		if is_throttling:
-			# Just released throttle - calculate spindown time based on how long we were throttling
-			var spindown_factor = min(throttle_duration / THROTTLE_TIME_FOR_MAX_SPINDOWN, 1.0)
-			var calculated_spindown_time = MIN_SPINDOWN_TIME + (spindown_factor * (MAX_SPINDOWN_TIME - MIN_SPINDOWN_TIME))
 			is_throttling = false
-		
-		# Gradually reduce engine momentum based on calculated spindown time
 		if engine_momentum > 0.0:
 			var current_spindown_time = MIN_SPINDOWN_TIME + (min(throttle_duration / THROTTLE_TIME_FOR_MAX_SPINDOWN, 1.0) * (MAX_SPINDOWN_TIME - MIN_SPINDOWN_TIME))
 			engine_momentum = max(0.0, engine_momentum - (delta / current_spindown_time))
@@ -93,45 +105,34 @@ func update_engine_audio(delta):
 	var new_audio_state = ""
 	should_play_audio = false
 	
-	# Determine audio state
 	if abs_throttle > 0.05:
-		# Active throttle - full power sound
 		new_audio_state = "throttle"
 		should_play_audio = true
 		var throttle_factor = abs_throttle * 0.7
 		var speed_factor = min(speed / 40.0, 1.0) * 0.3
 		target_pitch = BASE_PITCH + (throttle_factor + speed_factor) * (MAX_PITCH - BASE_PITCH)
 		target_volume = THROTTLE_VOLUME
-		engine_smoothing = 8.0  # Very responsive when throttling
-		
+		engine_smoothing = 8.0
 	elif engine_momentum > 0.0:
-		# Engine spinning down after throttle release
 		new_audio_state = "spindown"
 		should_play_audio = true
-		# Pitch and volume based on remaining momentum
 		var momentum_factor = engine_momentum * 0.6
 		var speed_factor = min(speed / 30.0, 1.0) * 0.2
 		target_pitch = BASE_PITCH + (momentum_factor + speed_factor) * (MAX_PITCH - BASE_PITCH)
-		# Volume fades smoothly based on momentum, reaching very quiet but not silent
-		var min_volume = -30.0  # Don't go completely silent during spindown
+		var min_volume = -30.0
 		target_volume = lerp(THROTTLE_VOLUME, min_volume, 1.0 - engine_momentum)
-		engine_smoothing = 2.0  # Smooth spindown
-		
+		engine_smoothing = 2.0
 	else:
-		# Complete silence
 		new_audio_state = "silent"
 		should_play_audio = false
 		engine_smoothing = 3.0
 	
-	# Handle audio playback
 	if should_play_audio:
 		if not engine_sound.playing:
 			engine_sound.play()
-		# Smooth audio parameter changes
 		engine_sound.pitch_scale = lerp(engine_sound.pitch_scale, target_pitch, delta * engine_smoothing)
 		engine_sound.volume_db = lerp(engine_sound.volume_db, target_volume, delta * engine_smoothing)
 	else:
-		# Final gentle fade when momentum is completely gone
 		if engine_sound.playing:
 			engine_sound.volume_db = lerp(engine_sound.volume_db, -50.0, delta * 1.0)
 			if engine_sound.volume_db < -45.0:

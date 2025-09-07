@@ -1,6 +1,6 @@
 extends Node3D  # attach to the fan model root
 
-@export var rotation_speed: float = 180.0 # degrees per second
+@export var rotation_speed: float = 100.0 # degrees per second
 
 func _process(delta):
 	# Rotate around the Y-axis
