@@ -1,4 +1,4 @@
-[gd_scene load_steps=58 format=4 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=61 format=4 uid="uid://bchw5g5rjommu"]
 
 [ext_resource type="Script" uid="uid://0qhdd6qs7nag" path="res://scenes/scripts/room_level.gd" id="1_a4r2b"]
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
@@ -49,6 +49,9 @@
 [ext_resource type="PackedScene" uid="uid://csg5c1qmltp8i" path="res://resources/FurnitureScenes/Doormat.tscn" id="45_nkk3v"]
 [ext_resource type="PackedScene" uid="uid://c5tfnsmrkvmho" path="res://resources/FurnitureScenes/TableLamp.tscn" id="46_nkk3v"]
 [ext_resource type="PackedScene" uid="uid://dk5de78e3ivn1" path="res://resources/FurnitureScenes/DinnerTable.tscn" id="47_1hwwq"]
+[ext_resource type="PackedScene" uid="uid://d1ukx55iih8gw" path="res://scenes/KeyDoor.tscn" id="51_adeye"]
+[ext_resource type="PackedScene" uid="uid://vgxdurvoycad" path="res://scenes/KeyItem.tscn" id="51_aleum"]
+[ext_resource type="PackedScene" uid="uid://baifiow2hi1a2" path="res://scenes/BoxItem.tscn" id="51_s1i2u"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -68,7 +71,6 @@ sky = SubResource("Sky_va0de")
 albedo_color = Color(0.52, 0.52, 0.52, 1)
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yxu0s"]
-load_path = "res://.godot/imported/hello_neighbor_prototype_house_-_floor_1_2.png-d55f2b05fce49bb1ce79bca0407fd9cf.s3tc.ctex"
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pnm0c"]
 resource_name = "outside_foundation.003"
@@ -462,9 +464,6 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -50.9487, -0.332152, 6.197
 [node name="doorway8" parent="Level" instance=ExtResource("29_omou1")]
 transform = Transform3D(-10.4762, 0, -10.7354, 0, 15, 0, 10.7354, 0, -10.4762, -126.088, -0.332152, 3.2245)
 
-[node name="doorway9" parent="Level" instance=ExtResource("29_omou1")]
-transform = Transform3D(10.7394, 0, 10.4721, 0, 15, 0, -10.4721, 0, 10.7394, -134.714, -0.332152, -9.68968)
-
 [node name="toiletSquare" parent="Level" instance=ExtResource("25_qbrtr")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -45.4988, -0.332154, -7.53205)
 
@@ -579,7 +578,7 @@ transform = Transform3D(0.0733138, 0, 0, 0, 0.0733138, 0, 0, 0, 0.0733138, -0.32
 light_color = Color(0.917647, 0.921569, 0.458824, 1)
 light_energy = 1.697
 shadow_enabled = true
-omni_range = 30.0
+omni_range = 41.647
 
 [node name="OmniLight3D8" type="OmniLight3D" parent="Lighting"]
 transform = Transform3D(0.0733138, 0, 0, 0, 0.0733138, 0, 0, 0, 0.0733138, 2.77492, 0.996362, -5.18494)
@@ -589,7 +588,7 @@ shadow_enabled = true
 omni_range = 44.994
 
 [node name="OmniLight3D18" type="OmniLight3D" parent="Lighting"]
-transform = Transform3D(0.0733138, 0, 0, 0, 0.0733138, 0, 0, 0, 0.0733138, 1.23746, 0.946293, -6.83492)
+transform = Transform3D(0.0733138, 0, 8.88178e-16, 0, 0.0733138, 0, -8.88178e-16, 0, 0.0733138, 1.14815, 0.946293, -7.07691)
 light_color = Color(0.917647, 0.921569, 0.458824, 1)
 light_energy = 3.5
 shadow_enabled = true
@@ -698,3 +697,17 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -57.0364, 2.92671, 35.0763
 
 [node name="tableCrossCloth" parent="." instance=ExtResource("47_1hwwq")]
 transform = Transform3D(7.13091, 0, -13.1966, 0, 15, 0, 13.1966, 0, 7.13091, -94.1175, -0.298427, -26.5624)
+
+[node name="BoxItem4" parent="." instance=ExtResource("51_s1i2u")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -84.9373, 13.8312, -6.6506)
+visible = false
+
+[node name="BoxItem5" parent="." instance=ExtResource("51_s1i2u")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -89.6882, 13.8312, -6.6506)
+visible = false
+
+[node name="KeyDoor" parent="." instance=ExtResource("51_adeye")]
+transform = Transform3D(10.6066, 0, 10.6066, 0, 15, 0, -10.6066, 0, 10.6066, -134.509, -0.320123, -9.4382)
+
+[node name="KeyItem" parent="." instance=ExtResource("51_aleum")]
+transform = Transform3D(-0.0470454, 0, 0.194388, 0, 0.2, 0, -0.194388, 0, -0.0470454, -160.209, -0.332152, 56.3723)

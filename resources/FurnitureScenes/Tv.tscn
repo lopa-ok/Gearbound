@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://blugjlxuqf7mm"]
+[gd_scene load_steps=5 format=3 uid="uid://blugjlxuqf7mm"]
 
 [ext_resource type="PackedScene" uid="uid://2av16h4ut14t" path="res://models/Furniture/GLTF format/televisionVintage.glb" id="1_axjgs"]
+[ext_resource type="AudioStream" uid="uid://wfmw5mww2a46" path="res://resources/Music/tv_noise_oldfilm.wav" id="2_iwgo7"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_axjgs"]
 emission_enabled = true
@@ -19,3 +20,10 @@ surface_material_override/0 = SubResource("StandardMaterial3D_axjgs")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.150954, 0.130707, -0.016182)
 size = Vector3(0.277161, 0.252502, 0.001)
 material = SubResource("StandardMaterial3D_iwgo7")
+
+[node name="TvNoiseOldfilm" type="AudioStreamPlayer3D" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.114928, 0.0505201, 0.0137958)
+stream = ExtResource("2_iwgo7")
+autoplay = true
+max_distance = 50.0
+bus = &"SFX"

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b0h8g08qac6y2" path="res://scenes/scripts/player.gd" id="1_51ceu"]
 [ext_resource type="Texture2D" uid="uid://jqf4ooyywj3o" path="res://models/Models/FBX format/Textures/colormap.png" id="2_51ceu"]
-[ext_resource type="AudioStream" uid="uid://dle48v6n4sgav" path="res://resources/Music/EngineSound.mp3" id="3_er3e8"]
+[ext_resource type="AudioStream" uid="uid://d07q7myuwe57n" path="res://resources/Music/EngineSound.wav" id="3_er3e8"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_muuqh"]
 resource_name = "colormap"
@@ -274,3 +274,6 @@ target_position = Vector3(0, 0, -3.9)
 stream = ExtResource("3_er3e8")
 autoplay = true
 bus = &"SFX"
+
+[node name="CarryPoint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08994, -0.162348)

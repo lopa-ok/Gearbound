@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource path="res://scenes/scripts/BoardedObstacle.gd" type="Script" id=1]
+
+[sub_resource type="StandardMaterial3D" id=1]
+resource_name = "BoardMaterial"
+albedo_color = Color(0.4, 0.25, 0.1, 1)
+
+[sub_resource type="BoxMesh" id=2]
+material = SubResource(1)
+size = Vector3(2.0, 1.0, 0.2)
+
+[sub_resource type="BoxShape3D" id=3]
+size = Vector3(2.0, 1.0, 0.2)
+
+[node name="BoardedObstacle" type="Node3D"]
+script = ExtResource(1)
+consume_crowbar = false
+break_time = 0.5
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource(3)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource(2)
+translation = Vector3(0, 0.5, 0)
