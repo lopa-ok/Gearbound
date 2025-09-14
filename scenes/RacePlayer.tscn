@@ -187,7 +187,10 @@ shadow_mesh = SubResource("ArrayMesh_4l1t4")
 gravity_scale = 4.0
 center_of_mass_mode = 1
 center_of_mass = Vector3(0, 0.17, -0.27)
+contact_monitor = true
+max_contacts_reported = 16
 script = ExtResource("1_51ceu")
+max_roof_items = 1
 
 [node name="body" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34713, -7.21911e-16)

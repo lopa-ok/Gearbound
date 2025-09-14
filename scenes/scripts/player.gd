@@ -22,6 +22,43 @@ const THROTTLE_TIME_FOR_MAX_SPINDOWN := 3.0  # Throttle duration needed for max 
 # Carry system (single slot)
 @export var pickup_radius: float = 2.5
 @export var interact_range: float = 4.5
+@export var instant_center_on_release: bool = true
+
+# Anti-stuck settings
+@export var unstuck_enabled: bool = true
+@export var unstuck_speed_threshold: float = 0.2   # m/s considered "stuck"
+@export var unstuck_throttle_threshold: float = 0.2
+@export var unstuck_min_time: float = 1.2          # seconds before auto nudge
+@export var unstuck_upward_boost: float = 3.5      # m/s upward when nudging
+@export var unstuck_forward_nudge: float = 2.5     # m/s along throttle direction
+@export var auto_flip_time: float = 1.0            # seconds upside-down before auto flip
+@export var safe_record_interval: float = 0.3
+@export var ground_check_distance: float = 2.0
+@export var unstuck_clearance_size: Vector3 = Vector3(1.2, 1.2, 2.6)
+@export var unstuck_cooldown: float = 1.0
+
+# Impact SFX settings
+@export var impact_sfx_enabled: bool = true
+@export var impact_sfx_min_prev_speed: float = 6.0   # require previous speed at least this
+@export var impact_sfx_min_speed_drop: float = 4.0   # trigger when speed drop >= this
+@export var impact_sfx_cooldown: float = 0.35
+@export var impact_sfx_bus: StringName = "SFX"
+@export var impact_stream: AudioStream
+@onready var impact_player: AudioStreamPlayer3D = get_node_or_null("ImpactSFX")
+
+var _impact_cd: float = 0.0
+var _prev_speed: float = 0.0
+
+var _stuck_timer: float = 0.0
+var _flip_timer: float = 0.0
+var _safe_timer: float = 0.0
+var _last_safe_transform: Transform3D
+var _unstuck_cd: float = 0.0
+var _unstuck_shape: BoxShape3D
+
+# Suppress auto-unstuck when true (e.g., inside vents). Toggle via set_unstuck_suppressed(true/false).
+var _unstuck_suppressed: bool = false
+
 var carried_item: Node3D = null
 @onready var carry_point: Node3D = get_node_or_null("CarryPoint")
 
@@ -71,6 +108,18 @@ func _ready():
 		inventory_hold.name = "InventoryHold"
 		add_child(inventory_hold)
 		inventory_hold.visible = false
+	# Impact SFX init
+	if impact_player == null:
+		impact_player = AudioStreamPlayer3D.new()
+		impact_player.name = "ImpactSFX"
+		add_child(impact_player)
+	impact_player.bus = impact_sfx_bus
+	if impact_stream == null:
+		var default_path := "res://resources/Music/Hit.mp3"
+		if ResourceLoader.exists(default_path):
+			impact_stream = load(default_path)
+	impact_player.stream = impact_stream
+	_prev_speed = linear_velocity.length()
 
 func _physics_process(delta):
 	update_controls(delta)
@@ -80,7 +129,22 @@ func _physics_process(delta):
 	_update_display_item_transform()
 	process_pickup_input()
 	process_drop_input()  # NEW: handle dropping
+	if unstuck_enabled:
+		# Guard auto-unstuck and auto-flip logic when suppressed
+		if _unstuck_suppressed:
+			# Skip unstuck/auto-flip while suppressed; continue normal physics
+			pass
+		else:
+			_update_unstuck(delta)
+	if _unstuck_cd > 0.0:
+		_unstuck_cd = max(0.0, _unstuck_cd - delta)
 	# Removed process_inventory_input() call because auto-store uses only 'interact'
+	# Impact SFX update
+	if impact_sfx_enabled:
+		_update_impact_sfx(delta)
+
+func set_unstuck_suppressed(flag: bool) -> void:
+	_unstuck_suppressed = flag
 
 func update_controls(delta):
 	var speed = linear_velocity.length()
@@ -89,6 +153,13 @@ func update_controls(delta):
 	var speed_factor = clamp(1.0 - (speed / MAX_SPEED), 0.2, 1.0)
 	var dynamic_max_steer = MAX_STEER * speed_factor
 	var steering_response = lerp(6.0, 2.0, speed / MAX_SPEED)
+
+	# Instant centering when both turn keys released
+	if instant_center_on_release:
+		var left_pressed := Input.is_action_pressed("ui_left")
+		var right_pressed := Input.is_action_pressed("ui_right")
+		if (Input.is_action_just_released("ui_left") or Input.is_action_just_released("ui_right")) and not left_pressed and not right_pressed:
+			steering = 0.0
 
 	steering = move_toward(
 		steering,
@@ -457,3 +528,146 @@ func _try_use_carried_on_target() -> bool:
 			n = n.get_parent()
 			depth += 1
 	return false
+
+func _update_unstuck(delta: float) -> void:
+	# Manual reset
+	if Input.is_action_just_pressed("unstuck") and _last_safe_transform != Transform3D():
+		_apply_safe_teleport(_last_safe_transform)
+		return
+
+	# Track a safe pose periodically
+	_safe_timer += delta
+	if _safe_timer >= safe_record_interval:
+		_safe_timer = 0.0
+		_record_safe_pose()
+
+	# Detect upside-down
+	var up_dot: float = global_transform.basis.y.dot(Vector3.UP)
+	if up_dot < 0.1:
+		_flip_timer += delta
+	else:
+		_flip_timer = 0.0
+	if _flip_timer >= auto_flip_time:
+		# Try to place upright near current spot
+		var t: Transform3D = global_transform
+		t.basis = Basis.from_euler(Vector3(0.0, t.basis.get_euler().y, 0.0))
+		t = _ground_snap(t.translated(Vector3.UP * 0.4))
+		_apply_safe_teleport(t)
+		_flip_timer = 0.0
+		return
+
+	# Auto nudge if stuck under throttle
+	var speed: float = linear_velocity.length()
+	var throttle: float = abs(Input.get_axis("ui_down", "ui_up"))
+	if speed < unstuck_speed_threshold and throttle > unstuck_throttle_threshold:
+		_stuck_timer += delta
+	else:
+		_stuck_timer = 0.0
+	if _stuck_timer >= unstuck_min_time:
+		# Upward and forward nudge based on throttle direction
+		var dir_sign: float = sign(Input.get_axis("ui_down", "ui_up"))
+		var forward: Vector3 = -transform.basis.z.normalized() * dir_sign
+		var v: Vector3 = linear_velocity
+		v.y = max(v.y, unstuck_upward_boost)
+		v += forward * unstuck_forward_nudge
+		linear_velocity = v
+		_stuck_timer = 0.0
+
+func _apply_safe_teleport(base: Transform3D) -> void:
+	if _unstuck_cd > 0.0:
+		return
+	var candidates: Array[Vector3] = [
+		Vector3(0, 0.6, 0),
+		Vector3(0, 1.0, 0),
+		Vector3(0, 1.5, 0),
+		Vector3(0, 0.8, 1.2),
+		Vector3(0, 0.8, -1.2),
+		Vector3(1.2, 0.8, 0),
+		Vector3(-1.2, 0.8, 0),
+	]
+	for off in candidates:
+		var t: Transform3D = base
+		t.origin += base.basis * off
+		t = _ground_snap(t)
+		if _is_pose_clear(t):
+			global_transform = t
+			linear_velocity = Vector3.ZERO
+			angular_velocity = Vector3.ZERO
+			_unstuck_cd = unstuck_cooldown
+			_stuck_timer = 0.0
+			return
+	# Fallback: rise up a bit above ground and accept
+	var tf: Transform3D = _ground_snap(base.translated(Vector3.UP * 2.0))
+	global_transform = tf
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	_unstuck_cd = unstuck_cooldown
+	_stuck_timer = 0.0
+
+func _record_safe_pose() -> void:
+	# Consider safe if near ground, mostly upright, and clear
+	var t: Transform3D = global_transform
+	var up_dot: float = t.basis.y.dot(Vector3.UP)
+	if up_dot <= 0.5:
+		return
+	# Normalize to upright yaw-only
+	t.basis = Basis.from_euler(Vector3(0.0, t.basis.get_euler().y, 0.0))
+	t = _ground_snap(t)
+	if _is_pose_clear(t):
+		_last_safe_transform = t
+
+func _ground_snap(t: Transform3D) -> Transform3D:
+	var space := get_world_3d().direct_space_state
+	var from: Vector3 = t.origin + Vector3.UP * 2.0
+	var to: Vector3 = t.origin - Vector3.UP * (ground_check_distance * 5.0)
+	var q := PhysicsRayQueryParameters3D.create(from, to)
+	var excl: Array = []
+	if self is CollisionObject3D:
+		excl.append(self.get_rid())
+	q.exclude = excl
+	var hit := space.intersect_ray(q)
+	if hit and hit.has("position"):
+		var pos: Vector3 = hit["position"]
+		t.origin.y = pos.y + (unstuck_clearance_size.y * 0.5) + 0.05
+	return t
+
+func _is_pose_clear(t: Transform3D) -> bool:
+	if _unstuck_shape == null:
+		_unstuck_shape = BoxShape3D.new()
+		_unstuck_shape.size = unstuck_clearance_size
+	else:
+		_unstuck_shape.size = unstuck_clearance_size
+	var params := PhysicsShapeQueryParameters3D.new()
+	params.shape = _unstuck_shape
+	params.transform = t
+	params.collide_with_areas = true
+	params.collide_with_bodies = true
+	var excl: Array = []
+	if self is CollisionObject3D:
+		excl.append(self.get_rid())
+	params.exclude = excl
+	var space := get_world_3d().direct_space_state
+	var res := space.intersect_shape(params, 4)
+	return res.is_empty()
+
+# --- Impact SFX helper ---
+func _update_impact_sfx(delta: float) -> void:
+	if _impact_cd > 0.0:
+		_impact_cd = max(0.0, _impact_cd - delta)
+	var cur_speed: float = linear_velocity.length()
+	var speed_drop: float = max(0.0, _prev_speed - cur_speed)
+	var had_contact := false
+	if has_method("get_contact_count"):
+		var cc = get_contact_count()
+		had_contact = cc > 0
+	# Consider also very large drops even if contact count isn't available
+	var big_drop := speed_drop >= (impact_sfx_min_speed_drop * 1.5)
+	if _impact_cd == 0.0 and impact_player and impact_player.stream and _prev_speed >= impact_sfx_min_prev_speed and speed_drop >= impact_sfx_min_speed_drop and (had_contact or big_drop):
+		# Scale volume and pitch by impact strength
+		var strength: float = clampf(speed_drop / 12.0, 0.0, 1.0)
+		impact_player.volume_db = lerp(-12.0, -2.0, strength)
+		var pitch_jitter := 0.1
+		impact_player.pitch_scale = 1.0 + (randf() * 2.0 - 1.0) * pitch_jitter
+		impact_player.play()
+		_impact_cd = impact_sfx_cooldown
+	_prev_speed = cur_speed

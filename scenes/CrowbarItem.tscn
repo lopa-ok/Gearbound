@@ -1,12 +1,13 @@
-[gd_scene load_steps=6 format=4 uid="uid://deyg1nne6o7ml"]
+[gd_scene load_steps=8 format=4 uid="uid://deyg1nne6o7ml"]
 
-[ext_resource type="Script" uid="uid://c0p30ojtupuqf" path="res://scenes/scripts/PickupItem.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://bglnxxp2tus6t" path="res://models/Models/Textures/Items/Hello Neighbor Mobile New Crowbar_0.png" id="2_73t2s"]
+[ext_resource type="Script" uid="uid://c0p30ojtupuqf" path="res://scenes/scripts/PickupItem.gd" id="1_73t2s"]
+[ext_resource type="Texture2D" uid="uid://bglnxxp2tus6t" path="res://models/Models/Textures/Items/Hello Neighbor Mobile New Crowbar_0.png" id="2_ladl0"]
+[ext_resource type="FontFile" uid="uid://d40535qpbpsw" path="res://models/Keyboard & Mouse/Fonts/kenney_input_keyboard_&_mouse.ttf" id="2_wpgvs"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sxaut"]
 resource_name = "metal_noise_hot_Inst"
 cull_mode = 2
-albedo_texture = ExtResource("2_73t2s")
+albedo_texture = ExtResource("2_ladl0")
 roughness = 0.788526
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_7q1ta"]
@@ -24,14 +25,14 @@ _surfaces = [{
 }]
 blend_shape_mode = 0
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_wpgvs"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_2le1s"]
 resource_name = "Sketchfab_Scene_crowbar_metal_noise_hot_Inst_0"
 _surfaces = [{
 "aabb": AABB(-6.42852, -8.4485, -42.6983, 12.7619, 20.9004, 82.7659),
 "attribute_data": PackedByteArray("UxLaof8d0/00EoGgvx7//aEfYKBDH1X1uh9xov8dF/WpMTagRyfi/Wc+aKBHJ6X1Xz7AoX8mtfWjMUii/yX//dshSO6fgx84eTo8u5+TPxmaL0juf4w/OLIoULs/iB8ZbBY8u398HxmjMcev/40/A3k60NOfkz8ZsiiV0z+IHxlfPuiyP5ZfBLofx6+fgj8DbBbR0398HxlTEgiz/3lfBJQxaOvf8a+5ZiZPoH/q/5JBLE+gP+7/kt0faOt/5q+5lUFToB+MyfESR0+g/4tL9TdTaOufsf/9M0i64l+t0/Z7HOnc36zf2VIg0dMfqN/bfQwIs9+Yp81wC9OzP5n/zPk559xf93flqTFWsR/y//2yKP3cP+x/5Wc+s7M/+tb8oR9WsX/m//0TF+nc/+CL5TQS07P/3dj8ACE1sj+CX9CvNeqYX4/v3qYh6pifgs/eWjY1sv+Pd9CUMWH83/GvuRMXUrb/4Ivl3R9h/H/mr7myKDm2P+x/5fk5UbZf93flViZToF+Gv1nbIbrin4MfOJovu+J/jD84aCxToD+Kv1liIJXT0Qsn0VYLVrEuA0+8aBz93CsRJ9H0DMev/wHfvCAimPb/Ceb5NDWT7jMW//00NZj2Mxbm+SAik+7/Cf/9XB/4tD/u/5I8FnEln+a/HnoncSU/9L8elxr4tH/q/5I6NkC2P/S/HiAiaos/5x8FNDVqi1/z/wQLIUC2n+a/HiAik+6/guPprzVs3l+P7940NZPu/47/6aYhbN6fgs/e0wzHr/8Be+VoHP3cKxEn0TULVrEuAwPmYiCV09ELJ9EzFvEhP4Jf0Hwf+7Q/ir9ZlSfxIf+Pd9CLGvy0X4a/WRUqcSVfyn/nuTD7tJ/S33MxNfi0H9bfcxcj8SHfxF/pMTX4tP+LS/UpI/EhmxY/5C0qcSV/GM/puDD8tB+MyfHQO+qYf8sz9tYwNbLfxF/pbTlAtl/Kf+eyTmqLf9dA/W5IuYl/0//9aQzosp+uH2dcC7Oz/62/Znoc59y/uv9SUiDQ07+8v1c3U2jr394/TjRIu+K/159SE0dPoB/W33OVQVOgn9Lfc4o5QLZ/GM/p7TA1spsWP+TQO+qYywnn6rJOaou+AtH2bki5if8ByfLING/d348fLqocbd1fgP8tUy7V2b/v37AoI9vZn+jvsJdT29mfqP/9ckhl0X+kwfYIOxTrX7JD7tU6TvufupfuTzYu3d/0X8wjGyzdf+NvzKYhTZ3/5j8RrjVNnb/zHxFBJGXRH4XfQFwtW9H/it9AqSyXvH+KX0vwQU2df88b9Nc6UPt/z19FCjsX6x/Pf01zSFvRn9dfW5hT1dnf3l9XbEaXvB/Wv2XwQU2d4wvf7g=="),
 "format": 34896613431,
 "index_count": 246,
-"index_data": PackedByteArray("AAABAAIAAgADAAAABAAFAAYABgAHAAQACABqAAoACABrAGoACwBqAGsACwAJAGoAawAMAAsADQAOAA8ADQAQAA4AEQAPABIAEQASABMAbAAVABYAbABtABUAFABtAGwAFAAXAG0AGABuAG8AGAAZAG4AbwBuABoAGwBvABoAcAAbABoAcAAaAHEAHQBwAHEAHQBxABwAHgAdABwAHAAfAB4AIAAhACIAIAAjACEAJAAlACIAJAAmACUAJwAoACkAJwAqACgAcgAtACsAcgBzAC0AcwByAC4AcgAvAC4ALgAsAHMAQgB0AEEAQgB1AHQAQAB0AHUAQABDAHQAdgAyAHcAdgAxADIAdgB3AHgAMAB2AHgAeAAzADAANAA1ADYANAA3ADUAOAA5ADoAOAA7ADkAPAA9AD4APAA/AD0ARABFAEYARABHAEUASABJAEoASABLAEkATABNAE4ATABPAE0AUABRAFIAUABTAFEAVABVAFYAVABXAFUAWABZAFoAWgBbAFgAWwBcAFgAXQBeAF8AXwBgAF0AXwB6AGAAegB7AGAAegBhAHsAYQBiAHsAYQB8AGIAYQB9AHwAfAB9AGMAfgB8AGMAYwBkAH4AZQBmAGcAZwB/AGUAZwBpAH8AaQBoAH8A"),
+"index_data": PackedByteArray("AAABAAIAAgADAAAABAAFAAYABgAHAAQACABqAAoACABrAGoACwBqAGsACwAJAGoAawAMAAsADQAOAA8ADQAQAA4AEQAPABIAEQASABMAbAAVABYAbABtABUAFABtAGwAFAAXAG0AGABuAG8AGAAZAG4AbwBuABoAGwBvABoAcAAbABoAcAAaAHEAHQBwAHEAHQBxABwAHgAdABwAHAAfAB4AIAAhACIAIAAjACEAJAAlACIAJAAmACUAJwAoACkAJwAqACgAcgAtACsAcgBzAC0AcwByAC4AcgAvAC4ALgAsAHMAQgB0AEEAQgB1AHQAQAB0AHUAQABDAHQAdgAyAHcAdgAxADIAdgB3AHgAMAB2AHgAeAAzADAANAA1ADYANAA3ADUAOAA5ADoAOAA7ADkAPAA9AD4APAA/AD0ARABFAEYARABHAEUASABJAEoASABLAEkATABNAE4ATABPAE0AUABRAFIAUABTAFEAVABVAFYAVABXAFUAWABZAFoAWgB5AFgAeQBcAFgAeQBbAFwAXQBeAF8AXwBgAF0AXwB6AGAAegB7AGAAegBhAHsAYQBiAHsAYQB8AGIAYQB9AHwAfAB9AGMAfgB8AGMAYwBkAH4AZQBmAGcAZwB/AGUAZwBpAH8AaQBoAH8A"),
 "lods": [3.68262, PackedByteArray("AAABAAIAAgADAAAABAAFAAYABgAHAAQACAAJAAoACwAJAAgACAAMAAsADQAOAA8ADQAQAA4AEQAPABIAEQASABMAFAAVABYAFAAXABUAGAAZABoAGwAYABoAGwAaABwAHQAbABwAHgAdABwAHAAfAB4AIAAhACIAIAAjACEAJAAlACIAJAAmACUAJwAoACkAJwAqACgAKwAsAC0ALAArAC4AKwAvAC4AMAAxADIAMgAzADAANAA1ADYANAA3ADUAOAA5ADoAOAA7ADkAPAA9AD4APAA/AD0AQABBAEIAQABDAEEARABFAEYARABHAEUASABJAEoASABLAEkATABNAE4ATABPAE0AUABRAFIAUABTAFEAVABVAFYAVABXAFUAWABZAFoAWgBbAFgAWwBcAFgAXQBeAF8AXwBgAF0AXwBhAGAAYQBiAGAAYgBhAGMAYwBkAGIAZQBmAGcAZwBoAGUAZwBpAGgA")],
 "material": SubResource("StandardMaterial3D_sxaut"),
 "name": "metal_noise_hot_Inst",
@@ -39,12 +40,29 @@ _surfaces = [{
 "uv_scale": Vector4(0, 0, 0, 0),
 "vertex_count": 128,
 "vertex_data": PackedByteArray("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")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_7q1ta")
 
-[node name="Crowbar" type="Node3D"]
-script = ExtResource("1")
-item_type = "crowbar"
-item_id = ""
+[sub_resource type="BoxShape3D" id="BoxShape3D_p0veu"]
+size = Vector3(15.2992, 5.42786, 23.5531)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("ArrayMesh_wpgvs")
+[node name="CrowbarItem" type="Node3D"]
+script = ExtResource("1_73t2s")
+
+[node name="crowbar_metal_noise_hot_Inst_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.2, -1.74846e-08, -1.74846e-08, -1.74846e-08, -0.2, 0, -1.74846e-08, 1.52855e-15, -0.2, 0, 3.04378, 0)
+mesh = SubResource("ArrayMesh_2le1s")
 skeleton = NodePath("")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(0.999307, -0.0372193, 0, 0.0372193, 0.999307, 0, 0, 0, 1, 1.61065, 2.21307, -1.50917)
+shape = SubResource("BoxShape3D_p0veu")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(0.61, 0, 0, 0, 0.61, 0, 0, 0, 0.61, 0, 12.94, 0)
+text = ""
+font = ExtResource("2_wpgvs")
+font_size = 4096

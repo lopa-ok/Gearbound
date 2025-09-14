@@ -8,6 +8,10 @@ extends Node3D
 # NEW: item metadata
 @export var item_type: String = "key"   # e.g. key, crowbar
 @export var item_id: String = "red_key"            # specific identifier (e.g. red_key)
+# Label facing
+@export var label_face_player: bool = true
+@export var label_face_yaw_only: bool = true
+@export var label_face_flip: bool = true
 
 var _carried: bool = false
 var _car_ref: Node = null
@@ -24,11 +28,34 @@ func _ready():
 	_label = get_node_or_null("Label3D")
 	if _label:
 		_label.visible = false
-		_label.text = pickup_prompt
+		# Preserve any symbol/text set in the scene; only set if empty
+		if str(_label.text) == "":
+			_label.text = pickup_prompt
 	_static_body = get_node_or_null("StaticBody3D") as CollisionObject3D
 	if _area:
 		_area.body_entered.connect(_on_body_entered)
 		_area.body_exited.connect(_on_body_exited)
+	# Ensure we can rotate label toward camera
+	if label_face_player:
+		set_process(true)
+
+func _process(_delta: float) -> void:
+	if not label_face_player or _label == null:
+		return
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	if label_face_yaw_only:
+		var to_cam := cam.global_transform.origin - _label.global_transform.origin
+		to_cam.y = 0.0
+		if to_cam.length() > 0.001:
+			_label.look_at(_label.global_transform.origin + to_cam, Vector3.UP)
+			if label_face_flip:
+				_label.rotate_y(PI)
+	else:
+		_label.look_at(cam.global_transform.origin, Vector3.UP)
+		if label_face_flip:
+			_label.rotate_y(PI)
 
 func is_carried() -> bool:
 	return _carried

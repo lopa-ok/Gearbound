@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhsrymxh45nhg"]
+
+[ext_resource type="PackedScene" uid="uid://dxk6ycdb6gc51" path="res://models/Furniture/Free Modular Air Duct Kit.glb" id="1_desu6"]
+
+[node name="Sketchfab_Scene" instance=ExtResource("1_desu6")]
+
+[node name="defaultMaterial8" parent="Sketchfab_model/Collada visual scene group/air_duct_side_cap" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.57213e-07, -3.59662)
+
+[node name="defaultMaterial9" parent="Sketchfab_model/Collada visual scene group/air_duct_vertical_90" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.3347, 0, 0)
+
+[node name="air_duct_vertical_45" parent="Sketchfab_model/Collada visual scene group" index="9"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.29967, 0, 0)
+
+[node name="defaultMaterial10" parent="Sketchfab_model/Collada visual scene group/air_duct_vertical_45" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.8111, 0, 0)
+
+[node name="defaultMaterial12" parent="Sketchfab_model/Collada visual scene group/air_duct_top_connection" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.7966, 0, 0)
+
+[node name="air_duct_sideaways_45" parent="Sketchfab_model/Collada visual scene group" index="12"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.45656e-07, -7.90769)
+
+[node name="defaultMaterial14" parent="Sketchfab_model/Collada visual scene group/air_duct_sideways_90" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -394.747, 0, 0)
