@@ -32,6 +32,9 @@ extends Node3D
 @export var accepted_item_types: PackedStringArray = ["key", "crowbar"]
 @export var ignore_item_type: bool = false
 @export var require_interact_press: bool = true
+# Require human to aim crosshair on this to interact; RC car can still use proximity
+@export var require_human_crosshair: bool = true
+@export var aim_max_distance: float = 6.0
 
 # Behavior
 @export var queue_free_on_open: bool = false
@@ -49,6 +52,8 @@ var _input_edge: bool = false
 var _pivot: Node3D
 var _anim_node: Node3D
 var _anim_orig_scale: Vector3 = Vector3.ONE
+# Track left mouse for just-pressed detection in physics
+var _lmb_down_prev: bool = false
 
 func _ready():
 	if animation_player_path != NodePath(""):
@@ -127,7 +132,11 @@ func _physics_process(_delta: float) -> void:
 		return
 	if _players_in_area.is_empty():
 		return
-	if Input.is_action_just_pressed("interact"):
+	# Detect left mouse just-pressed
+	var lmb_now: bool = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	var lmb_just: bool = lmb_now and not _lmb_down_prev
+	_lmb_down_prev = lmb_now
+	if Input.is_action_just_pressed("interact") or lmb_just:
 		_input_edge = true
 		if debug_log:
 			_dbg("Interact pressed (physics): players_in_area=%d" % _players_in_area.size())
@@ -141,7 +150,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not _players_in_area:
 		return
-	if event.is_action_pressed("interact"):
+	var lmb_evt: bool = false
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		lmb_evt = mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed and not mb.is_echo()
+	if event.is_action_pressed("interact") or lmb_evt:
 		_input_edge = true
 		if debug_log:
 			_dbg("Interact pressed (unhandled_input): players_in_area=%d" % _players_in_area.size())
@@ -173,6 +186,11 @@ func try_interact(player: Node) -> bool:
 		_dbg("Carried item type=%s id=%s (need id=%s, types=%s)" % [item_type, item_id, required_key_id, ",".join(accepted_item_types)])
 	var type_ok := ignore_item_type or _is_item_type_accepted(item_type)
 	if type_ok and item_id == required_key_id:
+		# If human, require that the crosshair aims at this; car stays proximity-based
+		if require_human_crosshair and _is_human_player(player) and not _is_crosshair_on_self(player):
+			if debug_log:
+				_dbg("Blocked: human not aiming at vent")
+			return false
 		_start_unlock(player, item)
 		return true
 	if debug_log:
@@ -326,7 +344,13 @@ func _ensure_pivot() -> void:
 		# Reparent and preserve world transforms
 		for n in to_move:
 			var n3d := n as Node3D
+			if n3d.get_parent() == _pivot:
+				continue
 			var gt := n3d.global_transform
+			# Properly detach from current parent before adding to pivot
+			var cur_parent := n3d.get_parent()
+			if cur_parent:
+				cur_parent.remove_child(n3d)
 			_pivot.add_child(n3d)
 			n3d.global_transform = gt
 		if debug_log:
@@ -334,3 +358,55 @@ func _ensure_pivot() -> void:
 
 func _dbg(msg: String) -> void:
 	print("[VentCover:%s] %s" % [name, msg])
+
+func _is_human_player(node: Node) -> bool:
+	return node is CharacterBody3D
+
+func _get_player_camera(player: Node) -> Camera3D:
+	var cam: Camera3D = null
+	if "camera_3d" in player:
+		cam = player.camera_3d
+		if cam:
+			return cam
+	cam = player.get_node_or_null("Camera3D") as Camera3D
+	if cam:
+		return cam
+	var pivot := player.get_node_or_null("CameraPivot")
+	if pivot:
+		cam = pivot.get_node_or_null("Camera3D") as Camera3D
+		if cam:
+			return cam
+	# As a last resort, look for any Camera3D child
+	for c in player.get_children():
+		if c is Camera3D:
+			return c
+	return null
+
+func _is_crosshair_on_self(player: Node) -> bool:
+	var cam := _get_player_camera(player)
+	if cam == null or not cam.current:
+		return false
+	var vp := cam.get_viewport()
+	if vp == null:
+		return false
+	var center := vp.get_visible_rect().size * 0.5
+	var origin := cam.project_ray_origin(center)
+	var dir := cam.project_ray_normal(center)
+	var to := origin + dir * aim_max_distance
+	var space := get_world_3d().direct_space_state
+	var params := PhysicsRayQueryParameters3D.create(origin, to)
+	params.collide_with_areas = true
+	params.collide_with_bodies = true
+	params.exclude = [player]
+	var res := space.intersect_ray(params)
+	if res.is_empty():
+		return false
+	var collider: Node = res.get("collider") as Node
+	if collider == null:
+		return false
+	var n := collider
+	if self == n or self.is_ancestor_of(n):
+		return true
+	if _pivot and _pivot.is_ancestor_of(n):
+		return true
+	return false

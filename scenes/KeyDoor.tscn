@@ -1,8 +1,6 @@
-[gd_scene load_steps=16 format=4 uid="uid://d1ukx55iih8gw"]
+[gd_scene load_steps=14 format=4 uid="uid://d1ukx55iih8gw"]
 
 [ext_resource type="Script" uid="uid://d3car8q47x32j" path="res://scenes/scripts/KeyDoor.gd" id="1"]
-[ext_resource type="AudioStream" uid="uid://mywpqg3utdy3" path="res://resources/Music/DoorUnlock.mp3" id="2_a2efa"]
-[ext_resource type="AudioStream" uid="uid://feiegdumkrxo" path="res://resources/Music/DoorLocked.mp3" id="3_ivf4t"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i8q04"]
 resource_name = "wood"
@@ -154,10 +152,10 @@ tracks/0/path = NodePath("doorway(Clone)/door:rotation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.8),
-"transitions": PackedFloat32Array(1, 1),
+"times": PackedFloat32Array(0, 0.8, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0.0360933, 0), Vector3(0, 1.32559, 0)]
+"values": [Vector3(0, 0.0360933, 0), Vector3(0, 1.32559, 0), Vector3(0, 1.50087, 0)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -166,10 +164,10 @@ tracks/1/path = NodePath("doorway(Clone)/door/StaticBody3D:rotation")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.8),
-"transitions": PackedFloat32Array(1, 1),
+"times": PackedFloat32Array(0, 0.8, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(0, 0, 0)]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -178,10 +176,10 @@ tracks/2/path = NodePath("doorway(Clone)/door/StaticBody3D/CollisionShape3D:rota
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.8),
-"transitions": PackedFloat32Array(1, 1),
+"times": PackedFloat32Array(0, 0.8, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(0, 0, 0)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ku183"]
@@ -197,8 +195,6 @@ size = Vector3(0.629395, 1.37097, 0.516602)
 script = ExtResource("1")
 use_area_path = NodePath("Area3D")
 auto_create_use_area = false
-sfx_open = ExtResource("2_a2efa")
-sfx_locked = ExtResource("3_ivf4t")
 
 [node name="doorway(Clone)" type="MeshInstance3D" parent="."]
 mesh = SubResource("ArrayMesh_55pkn")

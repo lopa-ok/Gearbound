@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://damt4vaevcg7i"]
+
+[ext_resource type="PackedScene" uid="uid://barcramp8monr" path="res://models/Models/Textures/Items/Vent 3D Model.glb" id="1_cu10y"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2ro23"]
+metallic = 1.0
+
+[node name="Sketchfab_Scene" instance=ExtResource("1_cu10y")]
+
+[node name="Object_6" parent="Sketchfab_model/root/GLTF_SceneRootNode/Sketchfab_model_0/d5f632ee933446908cebfc689317a649_obj_cleaner_materialmerger_gles_1/Object_2_2" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_2ro23")

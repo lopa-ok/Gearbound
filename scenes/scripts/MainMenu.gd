@@ -10,6 +10,19 @@ func _ready():
 	settings_menu = SETTINGS_MENU.instantiate()
 	add_child(settings_menu)
 	settings_menu.visible = false   # start hidden
+	
+	# Ensure any gameplay crosshair is hidden on the main menu
+	var root_cross := get_node_or_null("/root/CrosshairUI") as Control
+	if root_cross:
+		root_cross.visible = false
+	# Hide human-owned crosshair(s)
+	for p in get_tree().get_nodes_in_group("human_player"):
+		if p.has_method("_set_crosshair_visible"):
+			p.call_deferred("_set_crosshair_visible", false)
+		elif p.has_node("CrosshairLayer/Crosshair"):
+			var c := p.get_node("CrosshairLayer/Crosshair") as Control
+			if c:
+				c.visible = false
 
 func _on_new_game_button_pressed():
 	# Play the fade-out transition

@@ -10,9 +10,9 @@ const MAX_PITCH := 2.2
 const THROTTLE_VOLUME := -8.0
 const ROLLING_VOLUME := -15.0
 const MIN_SPEED_FOR_SOUND := 1.0
-const MIN_SPINDOWN_TIME := 1.0   # Minimum spindown time
-const MAX_SPINDOWN_TIME := 6.0   # Maximum spindown time
-const THROTTLE_TIME_FOR_MAX_SPINDOWN := 3.0  # Throttle duration needed for max spindown
+const MIN_SPindown_TIME := 1.0   # Minimum spindown time
+const MAX_SPindown_TIME := 6.0   # Maximum spindown time
+const THROTTLE_TIME_FOR_MAX_SPindown := 3.0  # Throttle duration needed for max spindown
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera_3d: Camera3D = $CameraPivot/Camera3D
@@ -23,6 +23,12 @@ const THROTTLE_TIME_FOR_MAX_SPINDOWN := 3.0  # Throttle duration needed for max 
 @export var pickup_radius: float = 2.5
 @export var interact_range: float = 4.5
 @export var instant_center_on_release: bool = true
+
+# Human player support
+@export var human_scene: PackedScene
+@export var human_node_path: NodePath
+var _human: Node = null
+var _switch_action_ready: bool = false
 
 # Anti-stuck settings
 @export var unstuck_enabled: bool = true
@@ -46,6 +52,8 @@ const THROTTLE_TIME_FOR_MAX_SPINDOWN := 3.0  # Throttle duration needed for max 
 @export var impact_stream: AudioStream
 @onready var impact_player: AudioStreamPlayer3D = get_node_or_null("ImpactSFX")
 
+@export var engine_bus_name: StringName = &"Car"
+
 var _impact_cd: float = 0.0
 var _prev_speed: float = 0.0
 
@@ -56,8 +64,8 @@ var _last_safe_transform: Transform3D
 var _unstuck_cd: float = 0.0
 var _unstuck_shape: BoxShape3D
 
-# Suppress auto-unstuck when true (e.g., inside vents). Toggle via set_unstuck_suppressed(true/false).
-var _unstuck_suppressed: bool = false
+# Removing unused _unstuck_suppressed to silence warning
+# var _unstuck_suppressed: bool = false
 
 var carried_item: Node3D = null
 @onready var carry_point: Node3D = get_node_or_null("CarryPoint")
@@ -89,62 +97,153 @@ var is_throttling := false
 var camera_offset := Vector3(0, 3.331, -5.679)
 var camera_rotation := Vector3(-3.1, 180, 0)
 
+var _cross_ref: Node = null
+
+@export var auto_decelerate_on_inactive: bool = true
+@export var inactive_decel_rate: float = 12.0
+@export var inactive_angular_decel_rate: float = 8.0
+@export var engine_audio_fade_speed: float = 6.0
+@export var engine_sfx_path: NodePath
+
+var _is_active_rc: bool = false
+var _engine_sfx: AudioStreamPlayer3D = null
+
+var _last_carried_item: Node = null
+var _suppress_audio_until_inactive: bool = false
+
+# SWITCHING REFACTOR: central PlayerSwitcher drives activation; remove internal TAB handling here
+var _switcher: Node = null
+
+@export var scale_multiplier: float = 1.0  # reset to original size (previously 1.5)
+
+@export var highlight_max_distance: float = 0.0  # 0 = use interact_range
+var _last_highlight_target: Node = null
+
+@export var switch_fade_in_time: float = 0.25
+@export var switch_fade_color: Color = Color(0, 0, 0, 1.0)
+var _fade_layer: CanvasLayer = null
+var _fade_rect: ColorRect = null
+
+func _get_engine_sfx() -> AudioStreamPlayer3D:
+	if _engine_sfx == null or not is_instance_valid(_engine_sfx):
+		if engine_sfx_path != NodePath(""):
+			_engine_sfx = get_node_or_null(engine_sfx_path) as AudioStreamPlayer3D
+		if _engine_sfx == null:
+			_engine_sfx = get_node_or_null("EngineSFX") as AudioStreamPlayer3D
+	return _engine_sfx
+
+# Hide any crosshair UI when RC is active
+func _hide_any_crosshair() -> void:
+	# Root-level crosshair created elsewhere
+	var root_cross := get_node_or_null("/root/CrosshairUI") as Control
+	if root_cross:
+		root_cross.visible = false
+	# Human-owned crosshair
+	if _human == null or not is_instance_valid(_human):
+		_find_human_reference()
+	if _human:
+		if _human.has_method("_set_crosshair_visible"):
+			_human.call_deferred("_set_crosshair_visible", false)
+		elif _human.has_node("CrosshairLayer/Crosshair"):
+			var c := _human.get_node("CrosshairLayer/Crosshair") as Control
+			if c:
+				c.visible = false
+
 func clear_carried_item():
 	# Utility so world interaction scripts can safely clear carried item
 	carried_item = null
 
+func _stop_audio_recursive(n: Node) -> void:
+	var p3d := n as AudioStreamPlayer3D
+	if p3d:
+		p3d.stop()
+		p3d.volume_db = -80.0
+	var p2d := n as AudioStreamPlayer
+	if p2d:
+		p2d.stop()
+		p2d.volume_db = -80.0
+	for c in n.get_children():
+		_stop_audio_recursive(c)
+
+func _stop_all_car_audio() -> void:
+	_stop_audio_recursive(self)
+
+func set_control_enabled(enabled: bool) -> void:
+	set_process(enabled)
+	# Keep physics processing always on so auto-flip/unstuck can run even when inactive
+	set_physics_process(true)
+	set_process_input(enabled) # ensure inactive car stops receiving _input (prevents double toggle)
+
+func set_active_camera(active: bool) -> void:
+	if camera_3d:
+		camera_3d.current = active
+	_is_active_rc = active
+	if active:
+		_mute_car_bus(false)
+	else:
+		_stop_all_car_audio()
+		_mute_car_bus(true)
+
+func _add_child_deferred(p: Node, c: Node) -> void:
+	if p and c:
+		p.call_deferred("add_child", c)
+
 func _ready():
+	_ensure_switch_player_action()
+	# Scaling disabled (only applies if changed from 1.0)
+	if scale_multiplier != 1.0:
+		scale = Vector3.ONE * scale_multiplier
+		# Removed radius/range automatic scaling to preserve original tuning
 	camera_3d.rotation_degrees = camera_rotation
 	engine_sound.pitch_scale = BASE_PITCH
 	engine_sound.volume_db = ROLLING_VOLUME
-	add_to_group("player")
-	if carry_point == null:
-		carry_point = Node3D.new()
-		carry_point.name = "CarryPoint"
-		add_child(carry_point)
-		carry_point.position = Vector3(0, 2.2, 0) # above roof
-	if inventory_hold == null:
-		inventory_hold = Node3D.new()
-		inventory_hold.name = "InventoryHold"
-		add_child(inventory_hold)
-		inventory_hold.visible = false
-	# Impact SFX init
-	if impact_player == null:
-		impact_player = AudioStreamPlayer3D.new()
-		impact_player.name = "ImpactSFX"
-		add_child(impact_player)
-	impact_player.bus = impact_sfx_bus
-	if impact_stream == null:
-		var default_path := "res://resources/Music/Hit.mp3"
-		if ResourceLoader.exists(default_path):
-			impact_stream = load(default_path)
-	impact_player.stream = impact_stream
-	_prev_speed = linear_velocity.length()
+	add_to_group("rc_player")
+	_switcher = get_node_or_null("/root/PlayerSwitcher")
+	if _switcher:
+		_switcher.connect("active_changed", Callable(self, "_on_active_changed"))
+	_on_active_changed(_switcher.active if _switcher else &"rc")
+
+func _ensure_switch_player_action():
+	if _switch_action_ready:
+		return
+	if not InputMap.has_action("switch_player"):
+		InputMap.add_action("switch_player")
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_TAB
+	if not InputMap.action_has_event("switch_player", ev):
+		InputMap.action_add_event("switch_player", ev)
+	_switch_action_ready = true
+
+func _input(event):
+	if not _is_active_rc:
+		return # ignore input when inactive to avoid extra toggles
+	if event is InputEventKey and event.is_pressed() and event.physical_keycode == KEY_TAB:
+		if _switcher:
+			var target := &"human" if _switcher.is_rc_active() else &"rc"
+			_switcher.set_active(target)
+
+func _on_active_changed(which: StringName):
+	var make_active := which == &"rc"
+	set_control_enabled(make_active)
+	set_active_camera(make_active)
+	if make_active:
+		_hide_any_crosshair()
+		_play_switch_fade_in()
 
 func _physics_process(delta):
+	# Always run minimal safety logic even when inactive so auto-flip works
+	if unstuck_enabled:
+		_update_unstuck(delta)
+	# Remaining car-only control when active
+	if not _is_active_rc:
+		return
 	update_controls(delta)
 	update_camera(delta)
 	update_engine_audio(delta)
-	update_carried_item_transform()
-	_update_display_item_transform()
+	_update_engine_audio_fade(delta)
 	process_pickup_input()
-	process_drop_input()  # NEW: handle dropping
-	if unstuck_enabled:
-		# Guard auto-unstuck and auto-flip logic when suppressed
-		if _unstuck_suppressed:
-			# Skip unstuck/auto-flip while suppressed; continue normal physics
-			pass
-		else:
-			_update_unstuck(delta)
-	if _unstuck_cd > 0.0:
-		_unstuck_cd = max(0.0, _unstuck_cd - delta)
-	# Removed process_inventory_input() call because auto-store uses only 'interact'
-	# Impact SFX update
-	if impact_sfx_enabled:
-		_update_impact_sfx(delta)
-
-func set_unstuck_suppressed(flag: bool) -> void:
-	_unstuck_suppressed = flag
+	process_drop_input()
+	_update_impact_sfx(delta)
 
 func update_controls(delta):
 	var speed = linear_velocity.length()
@@ -208,7 +307,7 @@ func update_engine_audio(delta):
 		if is_throttling:
 			is_throttling = false
 		if engine_momentum > 0.0:
-			var current_spindown_time = MIN_SPINDOWN_TIME + (min(throttle_duration / THROTTLE_TIME_FOR_MAX_SPINDOWN, 1.0) * (MAX_SPINDOWN_TIME - MIN_SPINDOWN_TIME))
+			var current_spindown_time = MIN_SPindown_TIME + (min(throttle_duration / THROTTLE_TIME_FOR_MAX_SPindown, 1.0) * (MAX_SPindown_TIME - MIN_SPindown_TIME))
 			engine_momentum = max(0.0, engine_momentum - (delta / current_spindown_time))
 	
 	var new_audio_state = ""
@@ -248,6 +347,20 @@ func update_engine_audio(delta):
 				engine_sound.stop()
 	
 	current_audio_state = new_audio_state
+
+func _update_engine_audio_fade(delta: float) -> void:
+	var sfx := _get_engine_sfx()
+	if sfx == null:
+		return
+	# If suppressed or car is not active, forcefully mute and stop all audio, then exit
+	if _suppress_audio_until_inactive or not _is_active_rc:
+		_stop_all_car_audio()
+		return
+	# Active: fade toward target and ensure playback
+	var target_db: float = 0.0
+	sfx.volume_db = lerp(sfx.volume_db, target_db, clamp(delta * engine_audio_fade_speed, 0.0, 1.0))
+	if not sfx.playing:
+		sfx.play()
 
 # ===== Carry System =====
 func get_carried_item():
@@ -504,34 +617,40 @@ func _place_item_on_ground(item: Node3D):
 	if hit and hit.has("position"):
 		item.global_position = hit["position"] + Vector3.UP * 0.05
 
-func _try_use_carried_on_target() -> bool:
+func _raycast_interact_target(max_dist: float) -> Node:
+	# Unified ray used for both highlight and interaction so distances match
+	if max_dist <= 0.0:
+		max_dist = interact_range
 	var space := get_world_3d().direct_space_state
 	var from := global_transform.origin + Vector3.UP * 1.2
-	var to := from + -transform.basis.z.normalized() * interact_range
+	var to := from + -transform.basis.z.normalized() * max_dist
 	var query := PhysicsRayQueryParameters3D.create(from, to)
-	# Exclude self so we don't hit the car
-	var excl := []
 	if self is CollisionObject3D:
-		excl.append(self.get_rid())
-	query.exclude = excl
+		query.exclude = [self.get_rid()]
 	query.collide_with_areas = true
+	query.collide_with_bodies = true
 	var hit := space.intersect_ray(query)
 	if hit and hit.has("collider"):
-		var target: Node = hit["collider"]
-		# Walk up the parent chain (up to 5 levels) to find a node with try_interact
-		var n: Node = target
+		var node: Node = hit["collider"]
+		# Walk up to find interactable (try_interact)
 		var depth := 0
-		while n and depth < 5:
+		var n: Node = node
+		while n and depth < 6:
 			if n.has_method("try_interact"):
-				if n.try_interact(self):
-					return true
+				return n
 			n = n.get_parent()
 			depth += 1
+	return null
+
+func _try_use_carried_on_target() -> bool:
+	var target := _raycast_interact_target(interact_range)
+	if target and target.has_method("try_interact"):
+		return target.try_interact(self)
 	return false
 
 func _update_unstuck(delta: float) -> void:
-	# Manual reset
-	if Input.is_action_just_pressed("unstuck") and _last_safe_transform != Transform3D():
+	# Manual reset only when RC is the active player
+	if _is_active_rc and Input.is_action_just_pressed("unstuck") and _last_safe_transform != Transform3D():
 		_apply_safe_teleport(_last_safe_transform)
 		return
 
@@ -556,22 +675,24 @@ func _update_unstuck(delta: float) -> void:
 		_flip_timer = 0.0
 		return
 
-	# Auto nudge if stuck under throttle
-	var speed: float = linear_velocity.length()
-	var throttle: float = abs(Input.get_axis("ui_down", "ui_up"))
-	if speed < unstuck_speed_threshold and throttle > unstuck_throttle_threshold:
-		_stuck_timer += delta
-	else:
-		_stuck_timer = 0.0
-	if _stuck_timer >= unstuck_min_time:
-		# Upward and forward nudge based on throttle direction
-		var dir_sign: float = sign(Input.get_axis("ui_down", "ui_up"))
-		var forward: Vector3 = -transform.basis.z.normalized() * dir_sign
-		var v: Vector3 = linear_velocity
-		v.y = max(v.y, unstuck_upward_boost)
-		v += forward * unstuck_forward_nudge
-		linear_velocity = v
-		_stuck_timer = 0.0
+	# Auto nudge if stuck under throttle (only when RC is active)
+	if _is_active_rc:
+		var speed: float = linear_velocity.length()
+		var throttle: float = abs(Input.get_axis("ui_down", "ui_up"))
+		if speed < unstuck_speed_threshold and throttle > unstuck_throttle_threshold:
+			_stuck_timer += delta
+		else:
+			_stuck_timer = 0.0
+
+		if _stuck_timer >= unstuck_min_time:
+			# Upward and forward nudge based on throttle direction
+			var dir_sign: float = sign(Input.get_axis("ui_down", "ui_up"))
+			var forward: Vector3 = -transform.basis.z.normalized() * dir_sign
+			var v: Vector3 = linear_velocity
+			v.y = max(v.y, unstuck_upward_boost)
+			v += forward * unstuck_forward_nudge
+			linear_velocity = v
+			_stuck_timer = 0.0
 
 func _apply_safe_teleport(base: Transform3D) -> void:
 	if _unstuck_cd > 0.0:
@@ -670,4 +791,160 @@ func _update_impact_sfx(delta: float) -> void:
 		impact_player.pitch_scale = 1.0 + (randf() * 2.0 - 1.0) * pitch_jitter
 		impact_player.play()
 		_impact_cd = impact_sfx_cooldown
-	_prev_speed = cur_speed
+		_prev_speed = cur_speed
+
+func _switch_to_human() -> void:
+	_ensure_switch_player_action()
+	if _human == null or not is_instance_valid(_human):
+		_find_human_reference()
+	if _human == null:
+		return
+	if _human.has_method("set_rc_player_path"):
+		_human.set_rc_player_path(get_path())
+	if _human.has_method("set_control_enabled"):
+		_human.set_control_enabled(true)
+	if _human.has_method("set_active_camera"):
+		_human.set_active_camera(true)
+	set_control_enabled(false)
+	set_active_camera(false)
+	var ps = get_node_or_null("/root/PlayerSwitcher")
+	if ps and ps.has_method("set_active"):
+		ps.set_active(&"human")
+
+func _get_crosshair() -> Node:
+	if _cross_ref == null or not is_instance_valid(_cross_ref):
+		_cross_ref = get_node_or_null("/root/CrosshairUI")
+		if _cross_ref == null:
+			var scr := load("res://scenes/scripts/ui/CrosshairUI.gd")
+			if scr:
+				var ui: Control = scr.new()
+				ui.name = "CrosshairUI"
+				get_tree().root.add_child(ui)
+				_cross_ref = ui
+	return _cross_ref
+
+func _track_item_first_pickup() -> void:
+	if not self.has_method("get_carried_item"):
+		return
+	var cur: Node = self.get_carried_item()
+	if cur == _last_carried_item:
+		return
+	if cur != null:
+		_handle_item_pickup_label(cur)
+	_last_carried_item = cur
+
+func _handle_item_pickup_label(item: Node) -> void:
+	var type_id: String = _get_item_type_for_label(item)
+	if type_id == "":
+		return
+	var tracker := get_node_or_null("/root/PickupTracker")
+	var already: bool = tracker != null and tracker.has_shown(type_id)
+	if already:
+		_hide_item_labels(item)
+	else:
+		if tracker != null:
+			tracker.mark_shown(type_id)
+
+func _get_item_type_for_label(item: Node) -> String:
+	if item and item.has_method("get_item_type"):
+		return str(item.get_item_type())
+	if "item_type" in item:
+		return str(item.item_type)
+	# Fallback: use class name
+	return item.get_class()
+
+func _hide_item_labels(item: Node) -> void:
+	for c in item.get_children():
+		var lbl := c as Label3D
+		if lbl:
+			lbl.visible = false
+
+func _ensure_car_bus() -> int:
+	var idx := AudioServer.get_bus_index(engine_bus_name)
+	if idx == -1:
+		AudioServer.add_bus(AudioServer.get_bus_count())
+		idx = AudioServer.get_bus_count() - 1
+		AudioServer.set_bus_name(idx, String(engine_bus_name))
+	return idx
+
+func _apply_bus_to_audio(n: Node) -> void:
+	var p3d := n as AudioStreamPlayer3D
+	if p3d:
+		p3d.bus = String(engine_bus_name)
+	var p2d := n as AudioStreamPlayer
+	if p2d:
+		p2d.bus = String(engine_bus_name)
+	for c in n.get_children():
+		_apply_bus_to_audio(c)
+
+func _set_car_audio_bus() -> void:
+	_ensure_car_bus()
+	_apply_bus_to_audio(self)
+
+func _mute_car_bus(mute: bool) -> void:
+	var idx := _ensure_car_bus()
+	AudioServer.set_bus_mute(idx, mute)
+
+func _find_human_reference():
+	# Prefer explicit export path
+	if human_node_path != NodePath(""):
+		_human = get_node_or_null(human_node_path)
+	if _human == null:
+		# Fallback: first node in human_player group
+		var hs = get_tree().get_nodes_in_group("human_player")
+		if hs.size() > 0:
+			_human = hs[0]
+
+func _process(_delta):
+	# Optional crosshair highlight update (only if car active)
+	if _is_active_rc:
+		var tgt := _raycast_interact_target(highlight_max_distance)
+		if tgt != _last_highlight_target:
+			# You can hook into your CrosshairUI here if needed, e.g., via a global singleton
+			_last_highlight_target = tgt
+
+func _ensure_fade_overlay() -> void:
+	if _fade_rect and is_instance_valid(_fade_rect):
+		return
+	var root := get_tree().root
+	if _fade_layer == null or not is_instance_valid(_fade_layer):
+		_fade_layer = CanvasLayer.new()
+		_fade_layer.name = "SwitchFadeLayer"
+		_fade_layer.layer = 128
+		root.add_child(_fade_layer)
+	_fade_rect = ColorRect.new()
+	_fade_rect.name = "FadeRect"
+	_fade_rect.color = switch_fade_color
+	_fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fade_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_fade_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_fade_layer.add_child(_fade_rect)
+	# Fill viewport
+	_fade_rect.custom_minimum_size = root.size
+	_fade_rect.anchor_left = 0
+	_fade_rect.anchor_top = 0
+	_fade_rect.anchor_right = 1
+	_fade_rect.anchor_bottom = 1
+	_fade_rect.offset_left = 0
+	_fade_rect.offset_top = 0
+	_fade_rect.offset_right = 0
+	_fade_rect.offset_bottom = 0
+
+func _play_switch_fade_in() -> void:
+	_ensure_fade_overlay()
+	if _fade_rect == null:
+		return
+	_fade_rect.visible = true
+	_fade_rect.modulate.a = 1.0
+	var tw := create_tween()
+	tw.tween_property(_fade_rect, "modulate:a", 0.0, switch_fade_in_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.finished.connect(Callable(self, "_cleanup_fade_overlay"))
+
+func _cleanup_fade_overlay() -> void:
+	if _fade_rect:
+		_fade_rect.visible = false
+		_fade_rect.queue_free()
+		_fade_rect = null
+	if _fade_layer:
+		_fade_layer.queue_free()
+		_fade_layer = null

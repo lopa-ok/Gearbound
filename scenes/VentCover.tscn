@@ -61,12 +61,6 @@ size = Vector3(10.9864, 10.6959, 61.575)
 
 [node name="VentCover" type="Node3D"]
 script = ExtResource("1")
-use_animation = true
-auto_create_pivot = false
-pry_sfx_path = NodePath("PrySFX")
-open_sfx_path = NodePath("OpenSFX")
-use_area_path = NodePath("Area3D")
-area_size = Vector3(100, 100, 100)
 
 [node name="Object_6" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.1, 0, 0, 0, -4.37114e-09, -0.1, 0, 0.1, -4.37114e-09, 0, 4.53103, 0)

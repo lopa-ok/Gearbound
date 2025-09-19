@@ -12,6 +12,15 @@ extends Node3D
 @export var label_face_player: bool = true
 @export var label_face_yaw_only: bool = true
 @export var label_face_flip: bool = true
+# Physics behavior
+@export var use_physics: bool = true
+@export var throw_strength: float = 8.0
+@export var inherit_drop_velocity: bool = true
+@export var physics_mass: float = 1.0
+@export var physics_linear_damp: float = 0.1
+@export var physics_angular_damp: float = 0.2
+@export var physics_static_body_path: NodePath = NodePath("crowbar_metal_noise_hot_Inst_0/StaticBody3D")
+@export var physics_shape_path: NodePath = NodePath("crowbar_metal_noise_hot_Inst_0/StaticBody3D/CollisionShape3D")
 
 var _carried: bool = false
 var _car_ref: Node = null
@@ -20,6 +29,8 @@ var _area: Area3D
 var _label: Label3D
 var _static_body: CollisionObject3D
 var _player_near: bool = false
+var _rb: RigidBody3D
+var _last_carried_state: bool = false
 
 func _ready():
 	add_to_group("pickup_item")
@@ -32,30 +43,44 @@ func _ready():
 		if str(_label.text) == "":
 			_label.text = pickup_prompt
 	_static_body = get_node_or_null("StaticBody3D") as CollisionObject3D
+	if use_physics:
+		_ensure_rigidbody()
+		if _rb:
+			_rb.mass = physics_mass
+			_rb.linear_damp = physics_linear_damp
+			_rb.angular_damp = physics_angular_damp
 	if _area:
 		_area.body_entered.connect(_on_body_entered)
 		_area.body_exited.connect(_on_body_exited)
 	# Ensure we can rotate label toward camera
-	if label_face_player:
+	if label_face_player or use_physics:
 		set_process(true)
 
 func _process(_delta: float) -> void:
-	if not label_face_player or _label == null:
-		return
-	var cam := get_viewport().get_camera_3d()
-	if cam == null:
-		return
-	if label_face_yaw_only:
-		var to_cam := cam.global_transform.origin - _label.global_transform.origin
-		to_cam.y = 0.0
-		if to_cam.length() > 0.001:
-			_label.look_at(_label.global_transform.origin + to_cam, Vector3.UP)
-			if label_face_flip:
-				_label.rotate_y(PI)
-	else:
-		_label.look_at(cam.global_transform.origin, Vector3.UP)
-		if label_face_flip:
-			_label.rotate_y(PI)
+	# Label facing
+	if label_face_player and _label:
+		var cam := get_viewport().get_camera_3d()
+		if cam:
+			if label_face_yaw_only:
+				var to_cam := cam.global_transform.origin - _label.global_transform.origin
+				to_cam.y = 0.0
+				if to_cam.length() > 0.001:
+					_label.look_at(_label.global_transform.origin + to_cam, Vector3.UP)
+					if label_face_flip:
+						_label.rotate_y(PI)
+			else:
+				_label.look_at(cam.global_transform.origin, Vector3.UP)
+				if label_face_flip:
+					_label.rotate_y(PI)
+	# Physics carry/drop syncing
+	if use_physics and _rb:
+		if _carried and not _rb.freeze:
+			_rb.freeze = true
+			_rb.linear_velocity = Vector3.ZERO
+			_rb.angular_velocity = Vector3.ZERO
+		elif not _carried and _rb.freeze:
+			_rb.freeze = false
+	_last_carried_state = _carried
 
 func is_carried() -> bool:
 	return _carried
@@ -70,7 +95,7 @@ func on_picked_up(car: Node, carry_point: Node):
 	if _label: _label.visible = false
 	if _area: _area.monitoring = false
 	# Keep world transform, then parent to carry point and zero local.
-	var wt = global_transform
+	var wt: Transform3D = global_transform
 	reparent(carry_point)
 	global_transform = wt # maintain orientation
 	# Snap to carry point + offset
@@ -81,12 +106,33 @@ func on_picked_up(car: Node, carry_point: Node):
 	if disable_process_on_pick:
 		set_process(false)
 		set_physics_process(false)
+	if use_physics and _rb:
+		_rb.freeze = true
+		_rb.linear_velocity = Vector3.ZERO
+		_rb.angular_velocity = Vector3.ZERO
 
-func on_dropped(_car: Node):
-	if not _carried:
-		return
+func on_dropped(by: Node, apply_throw: bool = true) -> void:
 	_carried = false
-	var wt = global_transform
+	if use_physics and _rb:
+		_rb.freeze = false
+		_rb.sleeping = false
+		if apply_throw:
+			var dir := Vector3.ZERO
+			var speed := throw_strength
+			if by and by is Node3D:
+				dir = (by as Node3D).global_transform.basis.z * -1.0
+			# Inherit velocity from carrier if available
+			if inherit_drop_velocity and by:
+				var v
+				if by.has_method("get_linear_velocity"):
+					v = by.call("get_linear_velocity")
+				else:
+					v = by.get("linear_velocity")
+				if typeof(v) == TYPE_VECTOR3:
+					_rb.linear_velocity = v
+			if dir != Vector3.ZERO:
+				_rb.apply_central_impulse(dir.normalized() * speed * _rb.mass)
+	var wt: Transform3D = global_transform
 	# Reparent back to original parent (scene root or container)
 	if _original_parent:
 		reparent(_original_parent)
@@ -99,6 +145,15 @@ func on_dropped(_car: Node):
 	if _area:
 		_area.monitoring = true
 	_car_ref = null
+
+func drop_with_throw(dir: Vector3, strength: float = -1.0) -> void:
+	if not (use_physics and _rb):
+		return
+	var s := strength if strength > 0.0 else throw_strength
+	_rb.freeze = false
+	_rb.sleeping = false
+	if dir != Vector3.ZERO:
+		_rb.apply_central_impulse(dir.normalized() * s * _rb.mass)
 
 func _on_body_entered(body: Node):
 	if _carried:
@@ -119,3 +174,80 @@ func get_item_type() -> String:
 
 func get_item_id() -> String:
 	return item_id
+
+func _ensure_rigidbody() -> void:
+	# Find an existing RigidBody3D or convert a StaticBody3D if present
+	_rb = get_node_or_null("RigidBody3D") as RigidBody3D
+	if _rb:
+		return
+	# Prefer explicitly pointed StaticBody3D if provided
+	if physics_static_body_path != NodePath(""):
+		var sb_pref := get_node_or_null(physics_static_body_path) as StaticBody3D
+		if sb_pref:
+			_rb = RigidBody3D.new()
+			_rb.name = "RigidBody3D"
+			add_child(_rb)
+			for child in sb_pref.get_children():
+				var cs_pref := child as CollisionShape3D
+				if cs_pref:
+					var wt_pref: Transform3D = cs_pref.global_transform
+					sb_pref.remove_child(cs_pref)
+					_rb.add_child(cs_pref)
+					cs_pref.global_transform = wt_pref
+			sb_pref.queue_free()
+			# Done
+			return
+	# Prefer explicitly pointed CollisionShape3D if provided
+	if physics_shape_path != NodePath(""):
+		var cs_target := get_node_or_null(physics_shape_path) as CollisionShape3D
+		if cs_target:
+			_rb = RigidBody3D.new()
+			_rb.name = "RigidBody3D"
+			add_child(_rb)
+			var wt_target: Transform3D = cs_target.global_transform
+			(cs_target.get_parent() as Node).remove_child(cs_target)
+			_rb.add_child(cs_target)
+			cs_target.global_transform = wt_target
+			return
+	# Scan direct children for any RigidBody3D
+	for c in get_children():
+		var rb := c as RigidBody3D
+		if rb:
+			_rb = rb
+			break
+	if _rb:
+		return
+	# Convert StaticBody3D to RigidBody3D by moving its shapes
+	var static_body := get_node_or_null("StaticBody3D") as StaticBody3D
+	if static_body:
+		_rb = RigidBody3D.new()
+		_rb.name = "RigidBody3D"
+		add_child(_rb)
+		# Move any CollisionShape3D under the new rigid body, preserving transforms
+		for child in static_body.get_children():
+			var cs := child as CollisionShape3D
+			if cs:
+				var wt: Transform3D = cs.global_transform
+				static_body.remove_child(cs)
+				_rb.add_child(cs)
+				cs.global_transform = wt
+		static_body.queue_free()
+	else:
+		# If shapes are directly under this node, move them under a new rigid body
+		var found_shapes: Array = []
+		for child in get_children():
+			var cs2 := child as CollisionShape3D
+			if cs2:
+				found_shapes.append(cs2)
+		if found_shapes.size() > 0:
+			_rb = RigidBody3D.new()
+			_rb.name = "RigidBody3D"
+			add_child(_rb)
+			for cs3 in found_shapes:
+				var wt2: Transform3D = (cs3 as CollisionShape3D).global_transform
+				(cs3.get_parent() as Node).remove_child(cs3)
+				_rb.add_child(cs3)
+				(cs3 as CollisionShape3D).global_transform = wt2
+	if _rb:
+		_rb.contact_monitor = true
+		_rb.max_contacts_reported = 4

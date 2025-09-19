@@ -1,6 +1,18 @@
-[gd_scene load_steps=23 format=4 uid="uid://daruipxdaokri"]
+[gd_scene load_steps=24 format=4 uid="uid://daruipxdaokri"]
 
 [ext_resource type="Script" uid="uid://b0h8g08qac6y2" path="res://scenes/scripts/player.gd" id="1_3vyb7"]
+[ext_resource type="Script" path="res://scenes/scripts/HumanPlayer.gd" id="2_human"]
+[ext_resource type="PackedScene" path="res://scenes/human_player.tscn" id="3_human_scene"]
+
+[node name="PlayerRC" type="VehicleBody3D"]
+script = ExtResource("1_3vyb7")
+# Mark in-group for discovery by HumanPlayer
+metadata/rc_player = true
+human_scene = ExtResource("3_human_scene")
+
+[node name="HumanSpawn" type="Node3D" parent="."]
+# Optional marker where HumanPlayer will be instantiated
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kekj1"]
 resource_name = "tire"

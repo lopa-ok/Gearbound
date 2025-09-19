@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://ky8aubfy2qf6"]
+
+[ext_resource type="PackedScene" uid="uid://7p270e6acxjw" path="res://models/Models/Textures/Items/Hello Neighbor Mobile New Crowbar.glb" id="1_d66cu"]
+
+[node name="Sketchfab_Scene" instance=ExtResource("1_d66cu")]

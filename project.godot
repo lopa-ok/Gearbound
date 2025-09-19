@@ -19,6 +19,11 @@ config/icon="res://icon.svg"
 
 BgMusic="*res://scenes/BgMusic.tscn"
 Transition="*res://scenes/Transition.tscn"
+InputActions="*res://scenes/scripts/InputActions.gd"
+CrosshairUI="*res://scenes/scripts/ui/CrosshairUI.gd"
+PickupTracker="*res://scenes/scripts/ui/PickupTracker.gd"
+CamTransition="*res://scenes/scripts/ui/CamTransition.gd"
+PlayerSwitcher="*res://scenes/scripts/PlayerSwitcher.gd"
 
 [display]
 
