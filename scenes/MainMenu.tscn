@@ -65,9 +65,9 @@ light_energy = 0.5
 shadow_enabled = true
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.76837e-07, -0.832153, -0.393117)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.3234, -0.832153, 11.825)
 use_collision = true
-size = Vector3(1000, 1, 1000)
+size = Vector3(59.1451, 1, 49.7726)
 material = SubResource("StandardMaterial3D_8xg12")
 
 [node name="Player" parent="." instance=ExtResource("1_tdapf")]
@@ -153,10 +153,10 @@ fov = 71.5905
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -605.0
-offset_top = -332.0
-offset_right = 574.0
-offset_bottom = 847.0
+offset_left = -590.0
+offset_top = -295.0
+offset_right = 589.0
+offset_bottom = 884.0
 grow_horizontal = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0

@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=4 uid="uid://ctg6duiirt64v"]
+[gd_scene load_steps=14 format=4 uid="uid://ctg6duiirt64v"]
 
 [ext_resource type="Script" uid="uid://cjgkjvjrl1n8r" path="res://scenes/scripts/HumanPlayer.gd" id="1"]
 [ext_resource type="AudioStream" uid="uid://clxa705ge8b0b" path="res://resources/Music/Step.mp3" id="2_hbih7"]
 [ext_resource type="Animation" uid="uid://1vf64os4embv" path="res://scenes/Idle.res" id="2_p5bqu"]
 [ext_resource type="AudioStream" uid="uid://ds4hurmhy1m6b" path="res://resources/Music/Step2.mp3" id="3_ppfq0"]
+[ext_resource type="Texture2D" uid="uid://cvgydacxe3wgl" path="res://models/Human/Skins/skaterMaleA.png" id="4_ppfq0"]
 
 [sub_resource type="CapsuleShape3D" id="1"]
 radius = 0.960047
@@ -175,6 +176,9 @@ bind/43/pose = Transform3D(0.984979, -0.154848, -0.076408, -0.169555, -0.783611,
 bind/44/name = &"RightToes"
 bind/44/bone = -1
 bind/44/pose = Transform3D(-0.992803, 0.119373, 0.0095851, -0.119664, -0.992026, -0.039574, 0.00478278, -0.0404359, 0.999171, -0.00340618, -0.00128335, -0.000149813)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i2cpi"]
+albedo_texture = ExtResource("4_ppfq0")
 
 [sub_resource type="Animation" id="Animation_xnllk"]
 resource_name = "Root|0_Targeting Pose"
@@ -1188,6 +1192,7 @@ bones/57/scale = Vector3(1, 1, 1)
 [node name="characterMedium" type="MeshInstance3D" parent="Root/Skeleton3D"]
 mesh = SubResource("ArrayMesh_317pn")
 skin = SubResource("Skin_p5bqu")
+surface_material_override/0 = SubResource("StandardMaterial3D_i2cpi")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

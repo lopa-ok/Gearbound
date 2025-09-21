@@ -38,6 +38,7 @@ extends CharacterBody3D
 @export var instant_center_on_release: bool = true
 
 @export var show_crosshair: bool = true
+@export var crosshair_scan_interval: float = 0.08 # seconds between crosshair raycasts (0 = every frame)
 
 @export var safe_record_interval: float = 0.75
 @export var unstuck_speed_threshold: float = 0.25
@@ -108,6 +109,7 @@ var _smoothed_yaw: float = 0.0
 var _smoothed_pitch: float = 0.0
 
 var _last_crosshair_target: Node = null
+var _crosshair_scan_t: float = 0.0
 
 var _current_anim: StringName = StringName()
 var _single_move_anim_mode: bool = false
@@ -157,10 +159,14 @@ func _process(delta):
 	_apply_look(delta)
 	if not _controls_enabled or not show_crosshair:
 		return
-	var target = _raycast_interact_target()
-	if target != _last_crosshair_target:
-		_update_crosshair_state(target)
-		_last_crosshair_target = target
+	# Throttle crosshair raycasts to reduce CPU
+	_crosshair_scan_t -= delta
+	if crosshair_scan_interval <= 0.0 or _crosshair_scan_t <= 0.0:
+		var target = _raycast_interact_target()
+		if target != _last_crosshair_target:
+			_update_crosshair_state(target)
+			_last_crosshair_target = target
+		_crosshair_scan_t = max(0.0, crosshair_scan_interval)
 
 func _physics_process(delta):
 	# Always simulate physics so the character continues moving/falling even when controls are disabled
@@ -837,3 +843,6 @@ func get_carried_item():
 			if c is Node3D:
 				return c
 	return null
+
+func clear_carried_item() -> void:
+	carried_item = null

@@ -49,38 +49,51 @@ func _ready():
 			_rb.mass = physics_mass
 			_rb.linear_damp = physics_linear_damp
 			_rb.angular_damp = physics_angular_damp
+			# Start frozen to avoid sim cost for idle items lying on the floor
+			_rb.freeze = true
+			_rb.sleeping = true
 	if _area:
 		_area.body_entered.connect(_on_body_entered)
 		_area.body_exited.connect(_on_body_exited)
-	# Ensure we can rotate label toward camera
+	# Only process when visible (for label facing); stays off otherwise
+	if label_face_player:
+		set_process(false)
+		var vis := VisibleOnScreenNotifier3D.new()
+		vis.name = "OnScreen"
+		add_child(vis)
+		vis.screen_entered.connect(_on_screen_entered)
+		vis.screen_exited.connect(_on_screen_exited)
+	# Ensure we can rotate label toward camera when visible
 	if label_face_player or use_physics:
-		set_process(true)
+		# Do not enable here; will be toggled by OnScreen signals
+		pass
 
 func _process(_delta: float) -> void:
-	# Label facing
-	if label_face_player and _label:
-		var cam := get_viewport().get_camera_3d()
-		if cam:
-			if label_face_yaw_only:
-				var to_cam := cam.global_transform.origin - _label.global_transform.origin
-				to_cam.y = 0.0
-				if to_cam.length() > 0.001:
-					_label.look_at(_label.global_transform.origin + to_cam, Vector3.UP)
-					if label_face_flip:
-						_label.rotate_y(PI)
-			else:
-				_label.look_at(cam.global_transform.origin, Vector3.UP)
+	# Label facing only; avoid any physics toggling here
+	if not label_face_player or _label == null or not is_inside_tree():
+		return
+	var cam := get_viewport().get_camera_3d()
+	if cam:
+		if label_face_yaw_only:
+			var to_cam := cam.global_transform.origin - _label.global_transform.origin
+			to_cam.y = 0.0
+			if to_cam.length() > 0.001:
+				_label.look_at(_label.global_transform.origin + to_cam, Vector3.UP)
 				if label_face_flip:
 					_label.rotate_y(PI)
-	# Physics carry/drop syncing
-	if use_physics and _rb:
-		if _carried and not _rb.freeze:
-			_rb.freeze = true
-			_rb.linear_velocity = Vector3.ZERO
-			_rb.angular_velocity = Vector3.ZERO
-		elif not _carried and _rb.freeze:
-			_rb.freeze = false
+		else:
+			_label.look_at(cam.global_transform.origin, Vector3.UP)
+			if label_face_flip:
+				_label.rotate_y(PI)
 	_last_carried_state = _carried
+
+func _on_screen_entered() -> void:
+	if label_face_player:
+		set_process(true)
+
+func _on_screen_exited() -> void:
+	if label_face_player:
+		set_process(false)
 
 func is_carried() -> bool:
 	return _carried
@@ -140,7 +153,8 @@ func on_dropped(by: Node, apply_throw: bool = true) -> void:
 	if _static_body:
 		_static_body.set_deferred("disabled", false)
 	if disable_process_on_pick:
-		set_process(true)
+		# Only enable label-facing when it is on screen
+		# set_process is toggled by visibility callbacks
 		set_physics_process(true)
 	if _area:
 		_area.monitoring = true

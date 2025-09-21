@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://cv0x51eim40c0"]
+
+[ext_resource type="PackedScene" uid="uid://dnif3yw7ac7ks" path="res://models/Furniture/GLTF format/kitchenCabinetCornerInner.glb" id="1_a5mcl"]
+
+[node name="kitchenCabinetCornerInner" instance=ExtResource("1_a5mcl")]

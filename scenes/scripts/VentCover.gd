@@ -99,8 +99,9 @@ func _ready():
 		_ensure_area_shape_size()
 	# Ensure we only process while prying
 	set_process(false)
-	set_physics_process(true)
-	set_process_unhandled_input(true)
+	# Physics only when proximity logic is enabled
+	set_physics_process(use_proximity_area)
+	set_process_unhandled_input(use_proximity_area)
 	# Resolve/auto-create pivot and reparent mesh/collision under it
 	_ensure_pivot()
 	# Resolve the node that gets animated (defaults to pivot)

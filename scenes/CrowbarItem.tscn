@@ -52,6 +52,8 @@ size = Vector3(15.2992, 5.42786, 23.5531)
 
 [node name="CrowbarItem" type="Node3D"]
 script = ExtResource("1_73t2s")
+item_type = "crowbar"
+item_id = "crowbar"
 
 [node name="crowbar_metal_noise_hot_Inst_0" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.2, -1.74846e-08, -1.74846e-08, -1.74846e-08, -0.2, 0, -1.74846e-08, 1.52855e-15, -0.2, 0, 3.04378, 0)

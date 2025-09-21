@@ -1,14 +1,9 @@
 [gd_scene load_steps=3 format=3 uid="uid://c5tfnsmrkvmho"]
 
 [ext_resource type="PackedScene" uid="uid://dogu3h2i2uv5v" path="res://models/Furniture/GLTF format/lampRoundTable.glb" id="1_fld1c"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5n2yq"]
-albedo_color = Color(1, 1, 0.701961, 1)
-emission_enabled = true
-emission = Color(0.932847, 0.664497, 0.235718, 1)
-emission_energy_multiplier = 2.62
+[ext_resource type="Material" uid="uid://2ik6aymh48nc" path="res://resources/FurnitureScenes/Lamp.tres" id="2_5n2yq"]
 
 [node name="lampRoundTable" instance=ExtResource("1_fld1c")]
 
 [node name="lampRoundTable(Clone)" parent="." index="0"]
-surface_material_override/1 = SubResource("StandardMaterial3D_5n2yq")
+surface_material_override/1 = ExtResource("2_5n2yq")

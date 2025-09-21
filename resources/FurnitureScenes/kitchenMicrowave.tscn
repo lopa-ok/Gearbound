@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://buenfoikg5nyy"]
+
+[ext_resource type="PackedScene" uid="uid://dwmwwmtmpubfh" path="res://models/Furniture/GLTF format/kitchenMicrowave.glb" id="1_bhibg"]
+
+[node name="kitchenMicrowave" instance=ExtResource("1_bhibg")]

@@ -9,6 +9,10 @@ var _is_removed := false
 var _timer := 0.0
 var _breaking := false
 
+func _ready():
+	# No need to process every frame unless we are breaking
+	set_process(false)
+
 func _process(delta):
 	if _breaking:
 		_timer += delta
@@ -30,6 +34,8 @@ func _start_break(player: Node, crowbar_item: Node):
 	if _breaking: return
 	_breaking = true
 	_timer = 0.0
+	# Enable processing only while breaking
+	set_process(true)
 	if consume_crowbar:
 		crowbar_item.queue_free()
 		if player.has_method("get_carried_item") and player.get_carried_item() == crowbar_item and player.has_method("clear_carried_item"):
@@ -39,6 +45,7 @@ func _remove():
 	_is_removed = true
 	_breaking = false
 	visible = false
+	# Stop processing now that we are removed
 	set_process(false)
 	# Optionally queue_free() if you prefer removal
 	# queue_free()
