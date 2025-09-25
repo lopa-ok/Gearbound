@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://bysvom2g6vt2u"]
+
+[ext_resource type="PackedScene" uid="uid://bcjcgr2psvogm" path="res://models/Models/Textures/Items/LockRed.glb" id="1_dem5h"]
+
+[node name="LockRed" instance=ExtResource("1_dem5h")]
+
+[node name="Plane_002" parent="." index="0"]
+transform = Transform3D(6.32142e-07, 0.0354004, -2.65116, 2.6514, 7.05706e-08, 6.33141e-07, 7.90178e-08, -2.65116, -0.0354004, -0.273746, -1.21747, 1.50259)
+
+[node name="Plane_004" parent="." index="1"]
+transform = Transform3D(-0.00351413, 0, -0.4175, 0, 0.417515, 0, 0.4175, 0, -0.00351413, -0.0589592, 4.82611, 1.95792)
+
+[node name="Plane_005" parent="." index="2"]
+transform = Transform3D(2.55794e-07, -0.000381293, -1.07288, 1.07288, 9.09074e-11, 2.55794e-07, 0, -1.07288, 0.000381293, -0.296387, -1.79569, 1.28297)
+
+[node name="Cylinder_002" parent="." index="3"]
+transform = Transform3D(0.2752, 0, 0, 0, 0.000974089, 0.275199, 0, -0.275199, 0.000974089, -1.73576, -0.0322275, 1.24699)
+
+[node name="Cylinder_003" parent="." index="4"]
+transform = Transform3D(0.2752, 0, 0, 0, 0.000974089, 0.275199, 0, -0.275199, 0.000974089, 1.09466, -0.0322275, 1.24699)

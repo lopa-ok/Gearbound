@@ -759,6 +759,7 @@ _data = {
 [node name="HumanPlayer" type="CharacterBody3D"]
 script = ExtResource("1")
 min_pitch_deg = -68.144
+interact_range = 7.0
 footstep_walk_interval = 0.3
 footstep_run_interval = 0.8
 footstep_streams = Array[AudioStream]([ExtResource("2_hbih7"), ExtResource("3_ppfq0")])
@@ -773,8 +774,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.12754, -0.48414)
 [node name="Camera3D" type="Camera3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.183182, -0.654959)
 current = true
-
-[node name="CarryPoint" type="Node3D" parent="."]
 
 [node name="ModelRoot" type="Node3D" parent="."]
 

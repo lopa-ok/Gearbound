@@ -1,5 +1,79 @@
-[gd_scene load_steps=2 format=3 uid="uid://cv0x51eim40c0"]
+[gd_scene load_steps=6 format=4 uid="uid://cv0x51eim40c0"]
 
-[ext_resource type="PackedScene" uid="uid://dnif3yw7ac7ks" path="res://models/Furniture/GLTF format/kitchenCabinetCornerInner.glb" id="1_a5mcl"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mskkf"]
+resource_name = "wood"
+albedo_color = Color(0.952921, 0.798667, 0.660025, 1)
+emission_enabled = true
 
-[node name="kitchenCabinetCornerInner" instance=ExtResource("1_a5mcl")]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t1onl"]
+resource_name = "metal"
+albedo_color = Color(0.875925, 0.917687, 0.925891, 1)
+emission_enabled = true
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_qslh1"]
+_surfaces = [{
+"aabb": AABB(0, 0, -0.46, 0.46, 0.39, 0.46),
+"format": 34896613377,
+"index_count": 75,
+"index_data": PackedByteArray("AAABAAIAAgABAAMAAwAEAAIAAgAEAAUAAQAGAAMABgABAAAABQAHAAIAAgAHAAAABwAFAAgABwAJAAAACQAHAAgAAAAKAAYAAAAJAAsACwAKAAAACwAJAAgABgAKAAwACgALAAwABgANAAMADAANAAYAAwANAAwADAAOAAMACAAOAAwACwAPAAwADAAPAAgACAAPAAsA"),
+"name": "wood",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 16,
+"vertex_data": PackedByteArray("0xs6JivkAAAAADomK+QAAAAAOiZM7wAAAAD//wAAAAAAAP//TO8AALIQ/////wAAAAAAACvkAACyEDom//8AAP///////wAA0xs6Jv//AADTGwAAK+QAANMbAAD//wAA//8AAAAAAAAAAAAAAAAAAP////8AAAAA//8AAP//AAA=")
+}, {
+"aabb": AABB(0, 0.39, -0.46, 0.46, 0.06, 0.46),
+"format": 34896613377,
+"index_count": 87,
+"index_data": PackedByteArray("AAABAAIAAwACAAEAAQAEAAMABQADAAQAAgADAAUAAQAGAAQABgABAAAABAAHAAUABAAGAAcABQAHAAgACAAHAAYACAAJAAUABQAJAAIACgAIAAYACQALAAIABgAMAAoADQAKAAwABgAOAAwAAAAOAAYADwAMAA4ADwAOAAAADAAPAA0AAgAQAAAADwAAABAAEQAQAAIAEAARAA8ADQAPABEACwARAAIAEQALAA0A"),
+"name": "metal",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 18,
+"vertex_data": PackedByteArray("TO///7IQAABM7/9/shAAAAAA/3+yEAAAAAD/f276AACQBf9///8AAAAAAABu+gAATO//f///AACQBQAA//8AALIQAAD//wAAAAAAAEzvAAD//wAA//8AAAAAAAAAAAAA////////AAD//wAAAAAAAEzv/////wAA/////wAAAAAAAP//shAAAAAA//8AAAAA")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_r87p2"]
+resource_name = "kitchenCabinetCornerInner_Mesh kitchenCabinetCornerInner"
+_surfaces = [{
+"aabb": AABB(0, 0, -0.46, 0.46, 0.39, 0.46),
+"attribute_data": PackedByteArray("FXLAeP9/wHj/f6R+pnd6hxVyeocAAJ0UpnedFKZ3U3YVclN2FXJ6hwAAeof//3qH/396h/9/nRT//50U/3+dFP9/eocAAHqHAACdFP//nRT//3qH6Y16h+mNU3ZYiFN2WIidFOmNU3bpjXqH/396h/9/U3YVclN2/39Tdv9/eocVcnqHAAAAAP9/AAD/f8B4FXLAeBVyeocAAHqH5oWdFOaFU3YYelN2GHqdFA=="),
+"format": 34896613399,
+"index_count": 75,
+"index_data": PackedByteArray("AAABAAIAAgADAAAAAwAEAAAABQAGAAcABwAIAAUACAAJAAUACQAKAAUACwAMAA0ADQAOAAsADwAQABEAEQASAA8AEwAUABUAFQAWABMAFgAXABMAFwAYABMAGQAaABsAGwAcABkAHQAeAB8AHwAgAB0AIQAiACMAIwAkACEAJAAlACEAJQAmACEAJwAoACkAKQAqACcA"),
+"material": SubResource("StandardMaterial3D_mskkf"),
+"name": "wood",
+"primitive": 3,
+"uv_scale": Vector4(36.2205, 34.2205, 0, 0),
+"vertex_count": 43,
+"vertex_data": PackedByteArray("0xs6Jivk//8AADomK+T//wAAOiZM7///shA6Jv/////TGzom/////wAA//8AAP+/AAD//0zv/78AADomTO//vwAAOiYr5P+/AAAAACvk/78AAAAAAAD/v///AAAAAP+///8AAP///7//////////v/////8AAP+/AAD//wAA//8AAAAAAAD/////AAAAAP///////wAA//////////8AgP//AAD//wCA0xsAAP//AIDTGzom//8AgLIQOib//wCAshD/////AIDTGzomK+QAgNMbAAAr5ACAAAAAACvkAIAAADomK+QAgNMbOiYr5P+/0xs6Jv///7/TGwAA////v9MbAAAr5P+///8AAAAA//8AAAAAAAD//wAAAAAr5P//0xsAACvk///TGwAA////////AAD/////shD//////5+yEDom////nwAAOiZM7/+fAAD//0zv/5//f/8//3//P/9//z//f/8//3//P/9/////f////3////9/////f////3////9/AAD/fwAA/38AAP9/AAD/f////3////9/////f////3////9/////f////3////9/////f////3////9/////f////3////9/////f////3////9/////f/8//3//P/9//z//f/8//3//P/9//z//f////3////9/////f///")
+}, {
+"aabb": AABB(0, 0.39, -0.46, 0.46, 0.06, 0.46),
+"attribute_data": PackedByteArray("pffxAqX3xwv/f8cL/3/xAv9/iIT/f9UIpffVCMeCeoel93qH//+dFFiInRSl98cLx4KdFMeCxwv///ECpffxAgAA8QJZCPECWQjHCwAAnRSmd50UN32dFDd9xwtZCPEC/3/xAv9/xwtZCMcL//+dFP9/nRT/f/EC///xAqZ3eof/f6R+/3+IhDd9eof3gccL94GdFAd+nRQHfscL/3/xAv9/nRQAAJ0UAADxAv9/1Qj/fwAA//8AAKX31Qil93qH//96hw=="),
+"format": 34896613399,
+"index_count": 87,
+"index_data": PackedByteArray("AAABAAIAAgADAAAABAAFAAYABgAHAAQABgAIAAcACQAKAAsACgAMAAsADQALAAwACwAOAAkACwAPAA4AEAARABIAEwAQABIAFAATABIAFQAUABIAEgAWABUAFwAYABkAGQAaABcAGwAcAB0AHQAeABsAHwAgACEAIQAiAB8AIwAkACUAJQAmACMAJwAoACkAKQAqACcAKwAsAC0ALQAuACsALQAvAC4ALQAwAC8A"),
+"material": SubResource("StandardMaterial3D_t1onl"),
+"name": "metal",
+"primitive": 3,
+"uv_scale": Vector4(36.2205, 34.2205, 0, 0),
+"vertex_count": 49,
+"vertex_data": PackedByteArray("TO///7IQAIBM7/9/shAAgAAA/3+yEACAAAD//7IQAIAAAP9/bvr/vwAA/3+yEP+/TO//f7IQ/7+QBf9/////v0zv/3////+///8AAP//AICyEAAA//8AgEzv/3///wCAkAUAAP//AICQBf9///8AgP///////wCATO//////AIAAAP//AAD/vwAA//+yEP+/AAD/f7IQ/78AAAAAAAD/vwAAAABM7/+/AAAAAG76/78AAP9/bvr/v0zv//+yEP+/TO///////79M7/9/////v0zv/3+yEP+///8AAAAA/7///wAA////v/////////+//////wAA/7+yEAAA/////wAAAABM7///AAAAAG76//+QBQAA/////5AF/3////+fkAUAAP///58AAAAAbvr/nwAA/39u+v+fAAD//wAA//8AAAAAAAD/////AAAAAP///////wAA//8AAP//shD/vwAA//8AAP+//////wAA/79M7///shD/v0zv//////+//////////7//f////3////9/////f////v//f////3////9//v//f////3//f////3////9/////f////3////9/////f////3////9/////f////3////9/////f////3////9/////f////3////9/////fwAA/38AAP9/AAD/fwAA/3//P/9//z//f/8//3//P/9/////f////3////9/////f////3////9/////f///////f////3/+//9//v//f////3////9/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_qslh1")
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_ho884"]
+data = PackedVector3Array(0.05, 0.0582, -0.05, 0, 0.0582, -0.05, 0, 0.0582, -0.03, 0, 0.0582, -0.03, 0.03, 0.0582, 0, 0.05, 0.0582, -0.05, 0.03, 0.0582, 0, 0.05, 0.0582, 0, 0.05, 0.0582, -0.05, 0, 0.39, -0.46, 0, 0.39, -0.03, 0, 0.0582, -0.03, 0, 0.0582, -0.03, 0, 0.0582, -0.05, 0, 0.39, -0.46, 0, 0.0582, -0.05, 0, 0, -0.05, 0, 0.39, -0.46, 0, 0, -0.05, 0, 0, -0.46, 0, 0.39, -0.46, 0.46, 0, -0.46, 0.46, 0, 0, 0.46, 0.39, 0, 0.46, 0.39, 0, 0.46, 0.39, -0.46, 0.46, 0, -0.46, 0, 0.39, -0.46, 0, 0, -0.46, 0.46, 0, -0.46, 0.46, 0, -0.46, 0.46, 0.39, -0.46, 0, 0.39, -0.46, 0.46, 0.39, 0, 0.46, 0, 0, 0.05, 0, 0, 0.05, 0, 0, 0.05, 0.0582, 0, 0.46, 0.39, 0, 0.05, 0.0582, 0, 0.03, 0.0582, 0, 0.46, 0.39, 0, 0.03, 0.0582, 0, 0.03, 0.39, 0, 0.46, 0.39, 0, 0.05, 0.0582, -0.05, 0.05, 0, -0.05, 0, 0, -0.05, 0, 0, -0.05, 0, 0.0582, -0.05, 0.05, 0.0582, -0.05, 0.05, 0.0582, -0.05, 0.05, 0.0582, 0, 0.05, 0, 0, 0.05, 0, 0, 0.05, 0, -0.05, 0.05, 0.0582, -0.05, 0.46, 0, -0.46, 0, 0, -0.46, 0, 0, -0.05, 0, 0, -0.05, 0.05, 0, -0.05, 0.46, 0, -0.46, 0.05, 0, -0.05, 0.05, 0, 0, 0.46, 0, -0.46, 0.05, 0, 0, 0.46, 0, 0, 0.46, 0, -0.46, 0.03, 0.39, 0, 0.03, 0.0582, 0, 0, 0.0582, -0.03, 0, 0.0582, -0.03, 0, 0.39, -0.03, 0.03, 0.39, 0, 0.43, 0.45, -0.43, 0.43, 0.42, -0.43, 0, 0.42, -0.43, 0, 0.42, -0.43, 0, 0.45, -0.43, 0.43, 0.45, -0.43, 0, 0.42, -0.01, 0, 0.42, -0.43, 0.43, 0.42, -0.43, 0.43, 0.42, -0.43, 0.01, 0.42, 0, 0, 0.42, -0.01, 0.43, 0.42, -0.43, 0.43, 0.42, 0, 0.01, 0.42, 0, 0.46, 0.39, 0, 0.03, 0.39, 0, 0.43, 0.42, 0, 0.03, 0.39, 0, 0.01, 0.39, 0, 0.43, 0.42, 0, 0.01, 0.42, 0, 0.43, 0.42, 0, 0.01, 0.39, 0, 0.43, 0.42, 0, 0.46, 0.45, 0, 0.46, 0.39, 0, 0.43, 0.42, 0, 0.43, 0.45, 0, 0.46, 0.45, 0, 0, 0.45, -0.46, 0, 0.45, -0.43, 0, 0.42, -0.43, 0, 0.39, -0.46, 0, 0.45, -0.46, 0, 0.42, -0.43, 0, 0.39, -0.03, 0, 0.39, -0.46, 0, 0.42, -0.43, 0, 0.39, -0.01, 0, 0.39, -0.03, 0, 0.42, -0.43, 0, 0.42, -0.43, 0, 0.42, -0.01, 0, 0.39, -0.01, 0.43, 0.45, -0.43, 0.43, 0.45, 0, 0.43, 0.42, 0, 0.43, 0.42, 0, 0.43, 0.42, -0.43, 0.43, 0.45, -0.43, 0.46, 0.39, -0.46, 0.46, 0.39, 0, 0.46, 0.45, 0, 0.46, 0.45, 0, 0.46, 0.45, -0.46, 0.46, 0.39, -0.46, 0.03, 0.39, 0, 0, 0.39, -0.03, 0, 0.39, -0.01, 0, 0.39, -0.01, 0.01, 0.39, 0, 0.03, 0.39, 0, 0.01, 0.42, 0, 0.01, 0.39, 0, 0, 0.39, -0.01, 0, 0.39, -0.01, 0, 0.42, -0.01, 0.01, 0.42, 0, 0, 0.45, -0.46, 0, 0.39, -0.46, 0.46, 0.39, -0.46, 0.46, 0.39, -0.46, 0.46, 0.45, -0.46, 0, 0.45, -0.46, 0, 0.45, -0.43, 0, 0.45, -0.46, 0.46, 0.45, -0.46, 0.46, 0.45, -0.46, 0.43, 0.45, -0.43, 0, 0.45, -0.43, 0.46, 0.45, -0.46, 0.43, 0.45, 0, 0.43, 0.45, -0.43, 0.46, 0.45, -0.46, 0.46, 0.45, 0, 0.43, 0.45, 0)
+
+[node name="kitchenCabinetCornerInner" type="Node3D"]
+
+[node name="kitchenCabinetCornerInner(Clone)" type="MeshInstance3D" parent="."]
+mesh = SubResource("ArrayMesh_r87p2")
+skeleton = NodePath("")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="kitchenCabinetCornerInner(Clone)"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="kitchenCabinetCornerInner(Clone)/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_ho884")

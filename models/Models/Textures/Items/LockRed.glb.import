@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://ci75jk3yhdpp8"
-path="res://.godot/imported/Lock.glb-b1ac975deb992023f5f3966e681c9c42.scn"
+uid="uid://bcjcgr2psvogm"
+path="res://.godot/imported/LockRed.glb-90307a445a912a508a305444b2c17c34.scn"
 
 [deps]
 
-source_file="res://models/Models/Textures/Items/Lock.glb"
-dest_files=["res://.godot/imported/Lock.glb-b1ac975deb992023f5f3966e681c9c42.scn"]
+source_file="res://models/Models/Textures/Items/LockRed.glb"
+dest_files=["res://.godot/imported/LockRed.glb-90307a445a912a508a305444b2c17c34.scn"]
 
 [params]
 

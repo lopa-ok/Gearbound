@@ -1,6 +1,8 @@
-[gd_scene load_steps=14 format=4 uid="uid://d1ukx55iih8gw"]
+[gd_scene load_steps=16 format=4 uid="uid://d1ukx55iih8gw"]
 
 [ext_resource type="Script" uid="uid://d3car8q47x32j" path="res://scenes/scripts/KeyDoor.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://feiegdumkrxo" path="res://resources/Music/DoorLocked.mp3" id="2_ivf4t"]
+[ext_resource type="AudioStream" uid="uid://mywpqg3utdy3" path="res://resources/Music/DoorUnlock.mp3" id="3_qt88m"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i8q04"]
 resource_name = "wood"
@@ -195,6 +197,8 @@ size = Vector3(0.629395, 1.37097, 0.516602)
 script = ExtResource("1")
 use_area_path = NodePath("Area3D")
 auto_create_use_area = false
+open_sfx_path = NodePath("DoorUnlockedSFX")
+locked_sfx_path = NodePath("DoorLockedSFX")
 
 [node name="doorway(Clone)" type="MeshInstance3D" parent="."]
 mesh = SubResource("ArrayMesh_55pkn")
@@ -226,3 +230,9 @@ transform = Transform3D(0.999342, 0.0116426, -0.0343397, -0.0110965, 0.99981, 0.
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="Area3D"]
 transform = Transform3D(1, -1.16415e-10, 3.72529e-09, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 shape = SubResource("BoxShape3D_ivf4t")
+
+[node name="DoorLockedSFX" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_ivf4t")
+
+[node name="DoorUnlockedSFX" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_qt88m")

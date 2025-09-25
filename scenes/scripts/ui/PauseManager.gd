@@ -108,13 +108,29 @@ func _on_quit() -> void:
 	get_tree().quit()
 
 func _set_crosshair_visible(vis: bool) -> void:
-	var root := get_tree().root
-	var cross := root.get_node_or_null("CrosshairUI")
-	if cross:
-		if cross.has_method("_set_crosshair_visible"):
-			cross._set_crosshair_visible(vis)
-		elif cross.has_method("set_visible"):
-			cross.set_visible(vis)
-		elif cross is CanvasItem:
-			cross.visible = vis
+	# Prefer telling the HumanPlayer to toggle its own crosshair UI
+	var did := false
+	for p in get_tree().get_nodes_in_group("human_player"):
+		if p and p.has_method("_set_crosshair_visible"):
+			p.call("_set_crosshair_visible", vis)
+			did = true
+	# Fallback: try to locate a Crosshair Control under players
+	if not did:
+		for p in get_tree().get_nodes_in_group("human_player"):
+			var cross := p.get_node_or_null("CrosshairLayer/Crosshair")
+			if cross and cross is CanvasItem:
+				(cross as CanvasItem).visible = vis
+				did = true
+				break
+	# Final fallback: legacy root-level node search (kept for compatibility)
+	if not did:
+		var root := get_tree().root
+		var cross2 := root.get_node_or_null("CrosshairUI")
+		if cross2:
+			if cross2.has_method("_set_crosshair_visible"):
+				cross2._set_crosshair_visible(vis)
+			elif cross2.has_method("set_visible"):
+				cross2.set_visible(vis)
+			elif cross2 is CanvasItem:
+				cross2.visible = vis
 	return

@@ -8,6 +8,11 @@ extends Node3D
 # NEW: item metadata
 @export var item_type: String = "key"   # e.g. key, crowbar
 @export var item_id: String = "red_key"            # specific identifier (e.g. red_key)
+# Per-item carry alignment (used by HumanPlayer when carried in hand)
+@export var carry_item_offset: Vector3 = Vector3.ZERO
+@export var carry_item_rotation_deg: Vector3 = Vector3.ZERO
+# Optional: separate visual to use while held in hand (keeps world model intact)
+@export var held_model_scene: PackedScene
 # Label facing
 @export var label_face_player: bool = true
 @export var label_face_yaw_only: bool = true
@@ -22,6 +27,11 @@ extends Node3D
 @export var physics_static_body_path: NodePath = NodePath("crowbar_metal_noise_hot_Inst_0/StaticBody3D")
 @export var physics_shape_path: NodePath = NodePath("crowbar_metal_noise_hot_Inst_0/StaticBody3D/CollisionShape3D")
 
+# --- Visual override (optional) ---
+@export var override_material_color_enabled: bool = false
+@export var override_material_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+@export var override_apply_to_held_visual: bool = true
+
 var _carried: bool = false
 var _car_ref: Node = null
 var _original_parent: Node = null
@@ -31,6 +41,7 @@ var _static_body: CollisionObject3D
 var _player_near: bool = false
 var _rb: RigidBody3D
 var _last_carried_state: bool = false
+var _held_visual: Node3D = null
 
 func _ready():
 	add_to_group("pickup_item")
@@ -67,6 +78,9 @@ func _ready():
 	if label_face_player or use_physics:
 		# Do not enable here; will be toggled by OnScreen signals
 		pass
+	# Apply optional color override to meshes at startup
+	if override_material_color_enabled:
+		_apply_material_color_override(self)
 
 func _process(_delta: float) -> void:
 	# Label facing only; avoid any physics toggling here
@@ -111,7 +125,7 @@ func on_picked_up(car: Node, carry_point: Node):
 	var wt: Transform3D = global_transform
 	reparent(carry_point)
 	global_transform = wt # maintain orientation
-	# Snap to carry point + offset
+	# Snap to carry point + offset (legacy); HumanPlayer will apply per-item overrides if exported
 	transform.origin = carry_offset
 	# Disable collisions / processing if desired
 	if _static_body:
@@ -123,9 +137,21 @@ func on_picked_up(car: Node, carry_point: Node):
 		_rb.freeze = true
 		_rb.linear_velocity = Vector3.ZERO
 		_rb.angular_velocity = Vector3.ZERO
+	# If a held visual is configured, instance it and hide our existing meshes
+	if held_model_scene:
+		_create_held_visual()
+		_set_meshes_visible(self, false)
+		# Optionally apply color override to the held visual too
+		if override_material_color_enabled and override_apply_to_held_visual and _held_visual:
+			_apply_material_color_override(_held_visual)
 
 func on_dropped(by: Node, apply_throw: bool = true) -> void:
 	_carried = false
+	# Remove held visual and restore meshes
+	if _held_visual and is_instance_valid(_held_visual):
+		_held_visual.queue_free()
+		_held_visual = null
+	_set_meshes_visible(self, true)
 	if use_physics and _rb:
 		_rb.freeze = false
 		_rb.sleeping = false
@@ -265,3 +291,47 @@ func _ensure_rigidbody() -> void:
 	if _rb:
 		_rb.contact_monitor = true
 		_rb.max_contacts_reported = 4
+
+# --- Held visual helpers ---
+func _create_held_visual() -> void:
+	if not held_model_scene or _held_visual != null:
+		return
+	var inst := held_model_scene.instantiate()
+	if inst and inst is Node3D:
+		_held_visual = inst
+		add_child(_held_visual)
+		_held_visual.transform = Transform3D(Basis.IDENTITY, Vector3.ZERO)
+
+func _set_meshes_visible(root: Node, vis: bool) -> void:
+	var q: Array = [root]
+	while q.size() > 0:
+		var n = q.pop_back()
+		if n is MeshInstance3D:
+			(n as MeshInstance3D).visible = vis
+		for c in n.get_children():
+			q.append(c)
+
+# --- Visual override helper ---
+func _apply_material_color_override(root: Node) -> void:
+	# Traverse from root and set per-surface override materials tinted to override_material_color.
+	var q: Array = [root]
+	while q.size() > 0:
+		var n = q.pop_back()
+		var mi := n as MeshInstance3D
+		if mi and mi.mesh:
+			var sc := mi.mesh.get_surface_count()
+			for s in sc:
+				var mat: Material = mi.get_surface_override_material(s)
+				if mat == null and mi.mesh:
+					mat = mi.mesh.surface_get_material(s)
+				var out_mat: Material = null
+				if mat and mat is BaseMaterial3D:
+					out_mat = (mat as BaseMaterial3D).duplicate()
+					(out_mat as BaseMaterial3D).albedo_color = override_material_color
+				else:
+					var std := StandardMaterial3D.new()
+					std.albedo_color = override_material_color
+					out_mat = std
+				mi.set_surface_override_material(s, out_mat)
+		for c in n.get_children():
+			q.append(c)
