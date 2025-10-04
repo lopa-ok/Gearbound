@@ -1,8 +1,12 @@
 extends CharacterBody3D
 
+const WORLD_LAYER := 1 << 0
+const HUMAN_LAYER := 1 << 1
+const CAR_LAYER := 1 << 2
+
 @export var move_speed: float = 8.0
 @export var sprint_multiplier: float = 1.6
-@export var jump_velocity: float = 5.0
+@export var jump_velocity: float = 4.2
 @export var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @export var gravity_fall_multiplier: float = 1.6
 @export var gravity_low_jump_multiplier: float = 2.2
@@ -56,7 +60,7 @@ extends CharacterBody3D
 @export var footstep_min_planar_speed: float = 0.7
 @export var footstep_streams: Array[AudioStream] = []
 @export var footstep_streams_run: Array[AudioStream] = []
-@export var footstep_volume_db: float = -6.0
+@export var footstep_volume_db: float = 0.0
 @export var footstep_pitch_base: float = 1.0
 @export var footstep_pitch_jitter: float = 0.08
 @export var carry_item_offset: Vector3 = Vector3(0, -0.05, 0)
@@ -72,6 +76,21 @@ extends CharacterBody3D
 @export var crouch_clearance_margin: float = 0.05
 @export var crouch_use_shape_check: bool = true
 @export var crouch_debug: bool = false
+@export var debug_drop_logs: bool = true
+# Stair/step assist (climb small steps without jumping)
+@export var step_assist_enabled: bool = true
+@export var step_max_height: float = 0.45
+@export var step_check_forward_distance: float = 0.6
+@export var step_up_boost: float = 3.0
+
+# --- Human vision overlay settings ---
+@export var human_vision_enabled: bool = false
+@export var vision_vignette_strength: float = 0.0
+@export var vision_vignette_softness: float = 0.2
+@export var vision_distortion: float = 0.0
+@export var vision_chromatic: float = 0.0
+@export var vision_grain: float = 0.0
+var _vision_rect: ColorRect = null
 
 var carried_item: Node3D = null
 var _pivot: Node3D
@@ -123,6 +142,8 @@ var _standing_capsule_height: float = -1.0
 var _standing_cylinder_height: float = -1.0
 var _standing_full_height: float = -1.0
 var _crosshair_pause_hidden: bool = false
+# Area-triggered jump timer (separate from input jump buffer)
+var _area_jump_timer: float = 0.0
 
 func _ready():
 	_pivot = $Pivot
@@ -146,6 +167,11 @@ func _ready():
 	_setup_carry_bone_attachment()
 	add_to_group("human_player")
 	add_to_group("player")
+	# --- Collision setup: avoid human <-> car pushing ---
+	# Ensure Human is on HUMAN layer (and default WORLD), and do not collide with CAR layer.
+	collision_layer |= (WORLD_LAYER | HUMAN_LAYER)
+	collision_mask &= ~CAR_LAYER
+	# ---------------------------------------------------
 	if show_crosshair:
 		_create_crosshair()
 	_switcher = get_node_or_null("/root/PlayerSwitcher")
@@ -195,11 +221,14 @@ func _physics_process(delta):
 	else:
 		_coyote_timer = max(0.0, _coyote_timer - delta)
 	_jump_buffer_timer = max(0.0, _jump_buffer_timer - delta)
+	_area_jump_timer = max(0.0, _area_jump_timer - delta)
 	_apply_gravity(delta)
 	if _controls_enabled:
 		_move_input(delta)
 	else:
 		_apply_deceleration(delta)
+	# Apply step assist before moving so we can climb small steps
+	_apply_step_assist(delta)
 	_apply_move()
 	_update_footsteps(delta)
 	_apply_look(delta)
@@ -232,6 +261,9 @@ func set_control_enabled(flag: bool) -> void:
 
 func _input(event):
 	if not _controls_enabled: return
+	# Debug: log raw Q presses and the drop action state
+	if debug_drop_logs and event is InputEventKey and event.pressed and event.physical_keycode == KEY_Q:
+		print("[HumanPlayer] Q pressed. is_action_just_pressed('drop')=", Input.is_action_just_pressed("drop"))
 	if event is InputEventMouseMotion:
 		var invert_factor = -1.0 if invert_y else 1.0
 		_look_x -= event.relative.x * look_sensitivity_mouse * 0.01
@@ -243,6 +275,7 @@ func _input(event):
 		elif event.axis == 3:
 			_look_y -= event.axis_value * look_sensitivity_pad * 0.02 * inv
 	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_SPACE:
+		# Keep manual jump behavior via the input jump buffer
 		_jump_buffer_timer = jump_buffer_time
 	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_TAB:
 		if _switcher and _controls_enabled:
@@ -292,9 +325,11 @@ func _apply_gravity(delta):
 		_vel.y -= g * delta
 	else:
 		_vel.y = 0.0
-	if _jump_buffer_timer > 0.0 and _coyote_timer > 0.0:
+	# Accept either input-buffered jump or area-requested jump
+	if (_jump_buffer_timer > 0.0 or _area_jump_timer > 0.0) and _coyote_timer > 0.0:
 		_vel.y = jump_velocity
 		_jump_buffer_timer = 0.0
+		_area_jump_timer = 0.0
 		_coyote_timer = 0.0
 
 func _move_input(delta):
@@ -337,12 +372,15 @@ func _ensure_footstep_player() -> void:
 	var existing := get_node_or_null("Footsteps")
 	if existing and existing is AudioStreamPlayer3D:
 		_footstep_player = existing
+		# Ensure footsteps use the SFX bus
+		_footstep_player.bus = "SFX"
 		return
 	_footstep_player = AudioStreamPlayer3D.new()
 	_footstep_player.name = "Footsteps"
 	_footstep_player.unit_size = 1.0
 	_footstep_player.attenuation_filter_cutoff_hz = 1000.0
-	_footstep_player.bus = "Master"
+	# Route to SFX bus instead of Master
+	_footstep_player.bus = "SFX"
 	add_child(_footstep_player)
 
 func _update_footsteps(delta: float) -> void:
@@ -376,6 +414,21 @@ func _play_footstep(sprinting: bool) -> void:
 	_footstep_player.pitch_scale = max(0.01, pitch)
 	_footstep_player.volume_db = footstep_volume_db
 	_footstep_player.play()
+
+# --- Public API: allow external triggers to make the human jump ---
+## Request the player to jump on next valid frame (respects coyote timing).
+## If force is true, apply the jump immediately, ignoring coyote/buffer.
+func request_jump(force: bool = false) -> void:
+	if not _controls_enabled:
+		return
+	if force:
+		_vel.y = jump_velocity
+		_jump_buffer_timer = 0.0
+		_area_jump_timer = 0.0
+		_coyote_timer = 0.0
+		return
+	# Schedule a jump via the area-specific timer so it does not interfere with input buffer
+	_area_jump_timer = max(_area_jump_timer, 0.05)
 
 func _resolve_anim_names():
 	if _anim_player == null: return
@@ -485,6 +538,8 @@ func process_pickup_input():
 			var look_target: Node3D = _raycast_pickup_item()
 			if not look_target: look_target = _get_nearest_pickup_item()
 			if look_target and look_target != carried_item:
+				# Detach from car roof if this item is currently displayed there
+				_detach_item_from_car_if_on_roof(look_target)
 				_drop_item()
 				_pick_up_item(look_target)
 		else:
@@ -499,7 +554,10 @@ func process_pickup_input():
 					depth += 1
 			var look_target2: Node3D = _raycast_pickup_item()
 			if not look_target2: look_target2 = _get_nearest_pickup_item()
-			if look_target2: _pick_up_item(look_target2)
+			if look_target2:
+				# Detach from car roof if applicable
+				_detach_item_from_car_if_on_roof(look_target2)
+				_pick_up_item(look_target2)
 
 func _raycast_pickup_item() -> Node3D:
 	if not _cam: return null
@@ -513,25 +571,74 @@ func _raycast_pickup_item() -> Node3D:
 		var n: Node = hit["collider"]
 		var depth := 0
 		while n and depth < 5:
-			if n is Node3D and n.is_in_group("pickup_item"): return n
+			if n is Node3D and n.is_in_group("pickup_item"):
+				var item := n as Node3D
+				var par := item.get_parent()
+				if par and par.get_parent() and par.get_parent().is_in_group("rc_player"):
+					var car := par.get_parent()
+					# Remove from car inventory display/array
+					if car and car.has_method("inventory_remove_item"):
+						car.inventory_remove_item(item)
+					# If the car was actively carrying this, clear its carried pointer
+					if car and car.has_method("get_carried_item") and car.get_carried_item() == item and car.has_method("clear_carried_item"):
+						car.clear_carried_item()
+					# Ensure the item is re-enabled for world pickup
+					if item.has_method("on_removed_from_inventory"):
+						item.on_removed_from_inventory(car, null)
+					item.visible = true
+					return item
+				return item
 			n = n.get_parent(); depth += 1
 	return null
 
 func process_drop_input():
-	if Input.is_action_just_pressed("drop") and carried_item: _drop_item()
+	if Input.is_action_just_pressed("drop"):
+		if debug_drop_logs:
+			print("[HumanPlayer] drop action pressed. carried_item=", carried_item != null)
+		if carried_item:
+			_drop_item()
+			if debug_drop_logs:
+				print("[HumanPlayer] dropped carried item.")
 
 func _get_nearest_pickup_item() -> Node3D:
 	var nearest: Node3D = null
 	var min_d = pickup_radius
 	for n in get_tree().get_nodes_in_group("pickup_item"):
 		if not n is Node3D: continue
+		# Skip already carried by someone
 		if n.has_method("is_carried") and n.is_carried(): continue
-		if n.has_method("can_be_picked") and not n.can_be_picked(): continue
 		var d = global_position.distance_to(n.global_position)
-		if d <= pickup_radius and d < min_d:
-			nearest = n
-			min_d = d
+		if d > pickup_radius or d >= min_d: continue
+		# Standard pickable gate
+		var pickable := true
+		if n.has_method("can_be_picked") and not n.can_be_picked():
+			# Special-case: items shown on car roof have their areas disabled; allow them
+			pickable = _is_item_on_car_roof(n)
+		if not pickable: continue
+		nearest = n
+		min_d = d
 	return nearest
+
+# Returns true if the item is currently parented under the car's display/carry point hierarchy
+func _is_item_on_car_roof(item: Node) -> bool:
+	var p := item.get_parent()
+	return p != null and p.get_parent() != null and p.get_parent().is_in_group("rc_player")
+
+# If the item is on the car roof/inventory display, remove it from the car inventory and re-enable interaction
+func _detach_item_from_car_if_on_roof(item: Node) -> bool:
+	var p := item.get_parent() if item else null
+	if p and p.get_parent() and p.get_parent().is_in_group("rc_player"):
+		var car := p.get_parent()
+		if car and car.has_method("inventory_remove_item"):
+			car.inventory_remove_item(item)
+		if car and car.has_method("get_carried_item") and car.get_carried_item() == item and car.has_method("clear_carried_item"):
+			car.clear_carried_item()
+		if item.has_method("on_removed_from_inventory"):
+			item.on_removed_from_inventory(car, null)
+		if item is Node3D:
+			(item as Node3D).visible = true
+		return true
+	return false
 
 func _ensure_carry_anchor():
 	if _carry_point: return
@@ -654,8 +761,14 @@ func _try_use_carried_on_target() -> bool:
 	return false
 
 func _create_crosshair():
-	if has_node("CrosshairLayer"): return
+	if has_node("CrosshairLayer"):
+		# Ensure vision overlay exists under the same layer
+		var lay := get_node("CrosshairLayer") as CanvasLayer
+		_ensure_human_vision_overlay(lay)
+		return
 	var layer := CanvasLayer.new(); layer.name = "CrosshairLayer"; add_child(layer)
+	# Create the vision overlay first so the crosshair renders above it
+	_ensure_human_vision_overlay(layer)
 	var ui := Control.new(); ui.name = "Crosshair"; ui.set_script(load("res://scenes/scripts/ui/CrosshairUI.gd")); layer.add_child(ui)
 	_crosshair = ui
 
@@ -735,6 +848,8 @@ func _on_active_changed(which: StringName):
 		_play_switch_fade_in()
 	else:
 		_play_idle_now()
+	# Toggle vision overlay visibility with active state
+	_set_human_vision_visible(make_active and human_vision_enabled)
 
 func _ensure_fade_overlay() -> void:
 	if _fade_rect and is_instance_valid(_fade_rect): return
@@ -1025,3 +1140,104 @@ func _adjust_collider_height(crouch: bool):
 		global_position.y -= 0.05
 	else:
 		global_position.y += 0.05
+
+# --- Human vision overlay helpers ---
+func _ensure_human_vision_overlay(parent_layer: CanvasLayer) -> void:
+	if not is_instance_valid(parent_layer):
+		return
+	if _vision_rect and is_instance_valid(_vision_rect):
+		return
+	# Create a full-screen ColorRect with the human vision shader
+	var rect := ColorRect.new()
+	rect.name = "HumanVisionOverlay"
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.color = Color(1,1,1,1)
+	# Fill the screen
+	rect.anchor_left = 0; rect.anchor_top = 0; rect.anchor_right = 1; rect.anchor_bottom = 1
+	rect.offset_left = 0; rect.offset_top = 0; rect.offset_right = 0; rect.offset_bottom = 0
+	# Material
+	var sh := load("res://scenes/HumanVision.gdshader")
+	var mat := ShaderMaterial.new()
+	mat.shader = sh
+	rect.material = mat
+	# Insert as first child so crosshair/UI draw above
+	parent_layer.add_child(rect)
+	parent_layer.move_child(rect, 0)
+	_vision_rect = rect
+	# Apply initial params and visibility
+	_set_human_vision_visible(human_vision_enabled)
+	_update_human_vision_uniforms()
+
+func _set_human_vision_visible(vis: bool) -> void:
+	if _vision_rect and is_instance_valid(_vision_rect):
+		_vision_rect.visible = vis
+
+func _update_human_vision_uniforms() -> void:
+	if not (_vision_rect and is_instance_valid(_vision_rect)):
+		return
+	var sm := _vision_rect.material as ShaderMaterial
+	if sm == null:
+		return
+	sm.set_shader_parameter("vignette_strength", clamp(vision_vignette_strength, 0.0, 2.0))
+	sm.set_shader_parameter("vignette_softness", clamp(vision_vignette_softness, 0.0, 1.0))
+	sm.set_shader_parameter("distortion_amount", clamp(vision_distortion, -0.5, 0.5))
+	sm.set_shader_parameter("chroma_amount", clamp(vision_chromatic, 0.0, 4.0))
+	sm.set_shader_parameter("grain_amount", clamp(vision_grain, 0.0, 1.0))
+
+# Public API to control from menus if needed
+func set_human_vision_enabled(flag: bool) -> void:
+	human_vision_enabled = flag
+	_set_human_vision_visible(flag)
+
+func set_human_vision_vignette(strength: float, softness: float) -> void:
+	vision_vignette_strength = strength
+	vision_vignette_softness = softness
+	_update_human_vision_uniforms()
+
+func set_human_vision_distortion(amount: float) -> void:
+	vision_distortion = amount
+	_update_human_vision_uniforms()
+
+func set_human_vision_chromatic(amount: float) -> void:
+	vision_chromatic = amount
+	_update_human_vision_uniforms()
+
+func set_human_vision_grain(amount: float) -> void:
+	vision_grain = amount
+	_update_human_vision_uniforms()
+
+# Attempt to nudge up small steps when a low obstacle is in front but there is clearance at knee height
+func _apply_step_assist(_delta: float) -> void:
+	if not step_assist_enabled:
+		return
+	if not is_on_floor():
+		return
+	# Require forward intent
+	var planar := Vector2(_vel.x, _vel.z)
+	if planar.length() < 0.1:
+		return
+	var forward := Vector3(planar.x, 0.0, planar.y).normalized()
+	var space := get_world_3d().direct_space_state
+	# Low ray (foot level) detects a small obstacle immediately ahead
+	var from_low := global_transform.origin + Vector3(0.0, 0.1, 0.0)
+	var to_low := from_low + forward * step_check_forward_distance
+	var ql := PhysicsRayQueryParameters3D.create(from_low, to_low)
+	ql.collide_with_areas = false
+	ql.collide_with_bodies = true
+	ql.exclude = [get_rid()]
+	var hit_low := space.intersect_ray(ql)
+	if hit_low.is_empty():
+		return
+	# High ray (knee height) should be clear to allow stepping up
+	var knee: float = clampf(step_max_height, 0.1, 1.0)
+	var from_high := global_transform.origin + Vector3(0.0, knee, 0.0)
+	var to_high := from_high + forward * step_check_forward_distance
+	var qh := PhysicsRayQueryParameters3D.create(from_high, to_high)
+	qh.collide_with_areas = false
+	qh.collide_with_bodies = true
+	qh.exclude = [get_rid()]
+	var hit_high := space.intersect_ray(qh)
+	if not hit_high.is_empty():
+		return
+	# Nudge upward to climb the step
+	_vel.y = max(_vel.y, step_up_boost)

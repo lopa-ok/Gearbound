@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://ccv885g33icgb"]
+
+[ext_resource type="Script" uid="uid://ck68k01t14mje" path="res://scenes/scripts/items/FlashlightItem.gd" id="1"]
+
+[node name="FlashlightItem" type="Node3D"]
+script = ExtResource("1")
+light_path = NodePath("Light")
+
+[node name="Light" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+light_energy = 2.2
+shadow_enabled = true
+spot_angle = 48.0

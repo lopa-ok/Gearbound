@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/scripts/ui/HoldStatusUI.gd" id="1"]
+
+[node name="HoldStatusUI" type="CanvasLayer"]
+layer = 1
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+script = ExtResource("1")
+update_interval = 0.25
+human_groups = PackedStringArray("human_player", "human", "player")
+car_groups = PackedStringArray("rc_car", "car", "vehicle")
+show_when_paused = true
+show_text = false
+show_icons = true
+icon_folder = "res://resources/icons"
+icon_by_type = true
+show_only_active = true
+
+[node name="HumanIcon" type="TextureRect" parent="UI"]
+position = Vector2(8, 6)
+size = Vector2(24, 24)
+stretch_mode = 5
+visible = false
+
+[node name="CarIcon" type="TextureRect" parent="UI"]
+position = Vector2(8, 26)
+size = Vector2(24, 24)
+stretch_mode = 5
+visible = false

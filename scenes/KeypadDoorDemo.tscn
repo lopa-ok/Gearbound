@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://pcc33fe8utd"]
+
+[ext_resource type="PackedScene" uid="uid://40rqok16gjee" path="res://scenes/Keypad.tscn" id="1_keypad"]
+[ext_resource type="PackedScene" uid="uid://o71pg06aqn54" path="res://scenes/KeyDoor3.tscn" id="2_door"]
+
+[node name="KeypadDoorDemo" type="Node3D"]
+
+[node name="KeyDoor" parent="." instance=ExtResource("2_door")]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 6.41885, 0, 0)
+
+[node name="Keypad" parent="." instance=ExtResource("1_keypad")]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 2.34569, 7.49696, 0)
+target_door_path = NodePath("../KeyDoor")

@@ -1,5 +1,9 @@
 extends VehicleBody3D
 
+const WORLD_LAYER := 1 << 0
+const HUMAN_LAYER := 1 << 1
+const CAR_LAYER := 1 << 2
+
 const MAX_STEER = 0.6
 const ENGINE_POWER = 400
 const MAX_SPEED = 35.0   # 🚗 Maximum speed limit
@@ -124,6 +128,16 @@ var _last_highlight_target: Node = null
 var _fade_layer: CanvasLayer = null
 var _fade_rect: ColorRect = null
 
+var _crt_layer: CanvasLayer = null
+var _crt_rect: ColorRect = null
+var crt_enabled: bool = true
+# CRT overlay tuning
+@export var crt_effect_strength: float = 1.0
+@export var crt_noise_amount: float = 0.008
+@export var crt_flicker_amount: float = 0.02
+
+@export var debug_drop_logs: bool = true
+
 func _get_engine_sfx() -> AudioStreamPlayer3D:
 	if _engine_sfx == null or not is_instance_valid(_engine_sfx):
 		if engine_sfx_path != NodePath(""):
@@ -198,6 +212,19 @@ func _ready():
 	engine_sound.pitch_scale = BASE_PITCH
 	engine_sound.volume_db = ROLLING_VOLUME
 	add_to_group("rc_player")
+	# --- Collision setup: avoid car <-> human pushing ---
+	collision_layer |= (WORLD_LAYER | CAR_LAYER)
+	collision_mask &= ~HUMAN_LAYER
+	# ---------------------------------------------------
+	# Load saved CRT prefs (persisted via Settings menu)
+	if ProjectSettings.has_setting("game/video/crt_overlay_enabled"):
+		crt_enabled = bool(ProjectSettings.get_setting("game/video/crt_overlay_enabled"))
+	if ProjectSettings.has_setting("game/video/crt_effect_strength"):
+		set_crt_effect_strength(float(ProjectSettings.get_setting("game/video/crt_effect_strength")))
+	if ProjectSettings.has_setting("game/video/crt_noise_amount"):
+		set_crt_noise_amount(float(ProjectSettings.get_setting("game/video/crt_noise_amount")))
+	if ProjectSettings.has_setting("game/video/crt_flicker_amount"):
+		set_crt_flicker_amount(float(ProjectSettings.get_setting("game/video/crt_flicker_amount")))
 	_switcher = get_node_or_null("/root/PlayerSwitcher")
 	if _switcher:
 		_switcher.connect("active_changed", Callable(self, "_on_active_changed"))
@@ -229,6 +256,9 @@ func _on_active_changed(which: StringName):
 	if make_active:
 		_hide_any_crosshair()
 		_play_switch_fade_in()
+		_ensure_crt_overlay()
+	else:
+		_cleanup_crt_overlay()
 
 func _physics_process(delta):
 	# Always run minimal safety logic even when inactive so auto-flip works
@@ -386,8 +416,12 @@ func process_pickup_input():
 # NEW: handle dropping carried or inventory item
 func process_drop_input():
 	if Input.is_action_just_pressed("drop"):
+		if debug_drop_logs:
+			print("[RC] drop action pressed. carried_item=", carried_item != null, " inventory_count=", inventory.size())
 		if carried_item:
 			_drop_item()
+			if debug_drop_logs:
+				print("[RC] dropped carried item.")
 		elif auto_store_items and inventory.size() > 0:
 			var idx_to_drop := -1
 			if _displayed_items.size() > 0:
@@ -398,6 +432,8 @@ func process_drop_input():
 						break
 			if idx_to_drop == -1:
 				idx_to_drop = 0
+			if debug_drop_logs:
+				print("[RC] dropping inventory index=", idx_to_drop)
 			inventory_drop_item(idx_to_drop)
 
 # Auto-store a world item directly into inventory
@@ -563,6 +599,24 @@ func inventory_take_first_item():
 			item.reparent(carry_point)
 			item.global_transform = wt
 			item.transform.origin = Vector3.ZERO
+	_refresh_roof_items()
+
+func inventory_remove_item(item: Node3D) -> void:
+	if item == null:
+		return
+	# Remove from inventory array
+	var idx := -1
+	for i in range(inventory.size()):
+		if inventory[i].has("node") and inventory[i]["node"] == item:
+			idx = i
+			break
+	if idx != -1:
+		inventory.pop_at(idx)
+	# Remove from displayed collections
+	_displayed_items.erase(item)
+	if displayed_inventory_item == item:
+		displayed_inventory_item = null
+	# Do not change item's parent/visibility here; the new holder will manage it
 	_refresh_roof_items()
 
 func get_inventory_summary() -> Array:
@@ -948,3 +1002,121 @@ func _cleanup_fade_overlay() -> void:
 	if _fade_layer:
 		_fade_layer.queue_free()
 		_fade_layer = null
+	# Also clean CRT if any remains when fade ends
+	if not _is_active_rc:
+		_cleanup_crt_overlay()
+
+func _ensure_crt_overlay() -> void:
+	if not crt_enabled:
+		return
+	# Reuse any existing root-level overlay to avoid duplicates across scene reloads
+	var root := get_tree().root
+	if _crt_layer == null or not is_instance_valid(_crt_layer):
+		_crt_layer = root.get_node_or_null("CRTPassLayer") as CanvasLayer
+	if _crt_layer and is_instance_valid(_crt_layer) and (_crt_rect == null or not is_instance_valid(_crt_rect)):
+		_crt_rect = _crt_layer.get_node_or_null("CRTOverlay") as ColorRect
+	# If we already have a valid rect, just update params and exit
+	if _crt_rect and is_instance_valid(_crt_rect):
+		var mat_existing := _crt_rect.material as ShaderMaterial
+		if mat_existing:
+			mat_existing.set_shader_parameter("screen_alpha", 1.0)
+			mat_existing.set_shader_parameter("effect_strength", crt_effect_strength)
+			mat_existing.set_shader_parameter("noise_amount", crt_noise_amount)
+			mat_existing.set_shader_parameter("flicker_amount", crt_flicker_amount)
+		_crt_layer.layer = -100
+		_crt_layer.visible = true
+		# Fill viewport in case size changed
+		_crt_rect.custom_minimum_size = root.size
+		_crt_rect.anchor_left = 0
+		_crt_rect.anchor_top = 0
+		_crt_rect.anchor_right = 1
+		_crt_rect.anchor_bottom = 1
+		_crt_rect.offset_left = 0
+		_crt_rect.offset_top = 0
+		_crt_rect.offset_right = 0
+		_crt_rect.offset_bottom = 0
+		return
+	# Otherwise create a new one
+	if _crt_layer == null or not is_instance_valid(_crt_layer):
+		_crt_layer = CanvasLayer.new()
+		_crt_layer.name = "CRTPassLayer"
+		# Render below regular UI and pause menu so UI is not affected by CRT
+		_crt_layer.layer = -100
+		root.add_child(_crt_layer)
+	_crt_rect = ColorRect.new()
+	_crt_rect.name = "CRTOverlay"
+	_crt_rect.color = Color(0,0,0,0) # color ignored by shader
+	_crt_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_crt_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_crt_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# Shader material
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://scenes/shaders/CRTCanvas.gdshader")
+	mat.set_shader_parameter("screen_alpha", 1.0)
+	mat.set_shader_parameter("effect_strength", crt_effect_strength)
+	mat.set_shader_parameter("noise_amount", crt_noise_amount)
+	mat.set_shader_parameter("flicker_amount", crt_flicker_amount)
+	_crt_rect.material = mat
+	_crt_layer.add_child(_crt_rect)
+	# Fill viewport
+	_crt_rect.custom_minimum_size = root.size
+	_crt_rect.anchor_left = 0
+	_crt_rect.anchor_top = 0
+	_crt_rect.anchor_right = 1
+	_crt_rect.anchor_bottom = 1
+	_crt_rect.offset_left = 0
+	_crt_rect.offset_top = 0
+	_crt_rect.offset_right = 0
+	_crt_rect.offset_bottom = 0
+
+# --- CRT overlay runtime tuning ---
+func set_crt_noise_amount(v: float) -> void:
+	crt_noise_amount = clampf(v, 0.0, 1.0)
+	if _crt_rect and _crt_rect.material is ShaderMaterial:
+		(_crt_rect.material as ShaderMaterial).set_shader_parameter("noise_amount", crt_noise_amount)
+
+func set_crt_flicker_amount(v: float) -> void:
+	crt_flicker_amount = clampf(v, 0.0, 1.0)
+	if _crt_rect and _crt_rect.material is ShaderMaterial:
+		(_crt_rect.material as ShaderMaterial).set_shader_parameter("flicker_amount", crt_flicker_amount)
+
+func set_crt_effect_strength(v: float) -> void:
+	crt_effect_strength = clampf(v, 0.0, 1.0)
+	if _crt_rect and _crt_rect.material is ShaderMaterial:
+		(_crt_rect.material as ShaderMaterial).set_shader_parameter("effect_strength", crt_effect_strength)
+
+func set_crt_enabled(flag: bool) -> void:
+	crt_enabled = flag
+	if not _is_active_rc:
+		if _crt_layer:
+			_crt_layer.visible = false
+		return
+	if flag:
+		_ensure_crt_overlay()
+		if _crt_layer:
+			_crt_layer.visible = true
+	else:
+		_cleanup_crt_overlay()
+
+func is_crt_enabled() -> bool:
+	return crt_enabled
+
+func _cleanup_crt_overlay() -> void:
+	if _crt_rect:
+		_crt_rect.queue_free()
+		_crt_rect = null
+	if _crt_layer:
+		_crt_layer.queue_free()
+		_crt_layer = null
+
+func _notification(what):
+	if what == NOTIFICATION_PAUSED:
+		if _crt_layer:
+			_crt_layer.visible = false
+	elif what == NOTIFICATION_UNPAUSED:
+		if _crt_layer:
+			_crt_layer.visible = crt_enabled and _is_active_rc
+
+func _exit_tree():
+	# Ensure any root-level overlays are removed when this player is freed (scene restart/menu)
+	_cleanup_crt_overlay()

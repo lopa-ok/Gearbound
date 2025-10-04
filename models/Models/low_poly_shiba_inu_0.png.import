@@ -1,0 +1,39 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://btq5w3yrv0hk7"
+path.s3tc="res://.godot/imported/low_poly_shiba_inu_0.png-acc2a2a0730d5988c2735d2c6a778051.s3tc.ctex"
+path.etc2="res://.godot/imported/low_poly_shiba_inu_0.png-acc2a2a0730d5988c2735d2c6a778051.etc2.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "9131b0c892100acbe9f6dad962929df8"
+}
+
+[deps]
+
+source_file="res://models/Models/low_poly_shiba_inu_0.png"
+dest_files=["res://.godot/imported/low_poly_shiba_inu_0.png-acc2a2a0730d5988c2735d2c6a778051.s3tc.ctex", "res://.godot/imported/low_poly_shiba_inu_0.png-acc2a2a0730d5988c2735d2c6a778051.etc2.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

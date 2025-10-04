@@ -32,106 +32,165 @@ shadow_size = 2
 
 [node name="SettingsMenu" type="Control"]
 layout_mode = 3
-anchors_preset = 0
-offset_left = 772.0
-offset_top = 780.0
-offset_right = 1148.0
-offset_bottom = 780.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme = ExtResource("1_1yw23")
 script = ExtResource("2_t7ar5")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = -0.87234
-anchor_right = 1.87234
-offset_top = -413.0
-offset_bottom = 254.0
+anchor_left = 0.1
+anchor_top = 0.1
+anchor_right = 0.9
+anchor_bottom = 0.9
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1yw23")
 metadata/_edit_use_anchors_ = true
 
-[node name="Label" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.239362
-anchor_right = 0.736702
-offset_top = -389.0
-offset_bottom = -329.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 50
-text = "Options"
-metadata/_edit_use_anchors_ = true
-
-[node name="Label2" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.239362
-anchor_right = 0.736702
-offset_left = -277.0
-offset_top = -246.0
-offset_right = -343.0
-offset_bottom = -195.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 42
-text = "Music"
-
-[node name="HSlider" parent="Label2" instance=ExtResource("2_dd8lr")]
-layout_mode = 0
-offset_left = 140.0
-offset_top = 1.0
-offset_right = 795.0
-offset_bottom = 49.0
-
-[node name="MainMenu" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = -0.0132979
-anchor_right = 0.986702
-offset_top = 145.0
-offset_bottom = 222.0
-grow_horizontal = 2
-grow_vertical = 0
-metadata/_edit_use_anchors_ = true
-
-[node name="Back" type="Button" parent="MainMenu"]
+[node name="RootMargin" type="MarginContainer" parent="PanelContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="RootVBox" type="VBoxContainer" parent="PanelContainer/RootMargin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TopBar" type="HBoxContainer" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="PanelContainer/RootMargin/RootVBox/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "Settings"
+
+[node name="Spacer" type="Control" parent="PanelContainer/RootMargin/RootVBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Back" type="Button" parent="PanelContainer/RootMargin/RootVBox/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
 theme_override_styles/normal = SubResource("StyleBoxFlat_t7ar5")
-text = "Back
-"
+text = "   Back   "
 
-[node name="Control" type="Control" parent="."]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="Sep1" type="HSeparator" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
 
-[node name="Label3" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.239362
-anchor_right = 0.736702
-offset_left = -275.0
-offset_top = -160.0
-offset_right = -341.0
-offset_bottom = -109.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 42
+[node name="AudioLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Audio"
+
+[node name="AudioGrid" type="GridContainer" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="MusicLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox/AudioGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Music"
+horizontal_alignment = 2
+
+[node name="Music" parent="PanelContainer/RootMargin/RootVBox/AudioGrid" instance=ExtResource("2_dd8lr")]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SFXLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox/AudioGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
 text = "SFX"
+horizontal_alignment = 2
 
-[node name="sfx" parent="." instance=ExtResource("4_t7ar5")]
-layout_mode = 0
-offset_left = -47.0
-offset_top = -165.0
-offset_right = 608.0
-offset_bottom = -117.0
+[node name="SFX" parent="PanelContainer/RootMargin/RootVBox/AudioGrid" instance=ExtResource("4_t7ar5")]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
 
-[connection signal="pressed" from="MainMenu/Back" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="MainMenu/Back" to="MainMenu" method="_on_quit_button_pressed"]
+[node name="Sep2" type="HSeparator" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+
+[node name="VideoLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Camera Shaders"
+
+[node name="CRTToggle" type="CheckBox" parent="PanelContainer/RootMargin/RootVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Enable Camera Shaders"
+
+[node name="CRTGrid" type="GridContainer" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="CRTIntensityLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox/CRTGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Intensity"
+horizontal_alignment = 2
+
+[node name="CRTIntensitySlider" type="HSlider" parent="PanelContainer/RootMargin/RootVBox/CRTGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="CRTNoiseLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox/CRTGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Noise"
+horizontal_alignment = 2
+
+[node name="CRTNoiseSlider" type="HSlider" parent="PanelContainer/RootMargin/RootVBox/CRTGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.001
+value = 0.008
+
+[node name="CRTFlickerLabel" type="Label" parent="PanelContainer/RootMargin/RootVBox/CRTGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Flicker"
+horizontal_alignment = 2
+
+[node name="CRTFlickerSlider" type="HSlider" parent="PanelContainer/RootMargin/RootVBox/CRTGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.001
+value = 0.02
+
+[connection signal="pressed" from="PanelContainer/RootMargin/RootVBox/TopBar/Back" to="." method="_on_back_pressed"]
+[connection signal="toggled" from="PanelContainer/RootMargin/RootVBox/CRTToggle" to="." method="_on_crt_toggled"]
+[connection signal="value_changed" from="PanelContainer/RootMargin/RootVBox/CRTGrid/CRTIntensitySlider" to="." method="_on_crt_intensity_changed"]
+[connection signal="value_changed" from="PanelContainer/RootMargin/RootVBox/CRTGrid/CRTNoiseSlider" to="." method="_on_crt_noise_changed"]
+[connection signal="value_changed" from="PanelContainer/RootMargin/RootVBox/CRTGrid/CRTFlickerSlider" to="." method="_on_crt_flicker_changed"]

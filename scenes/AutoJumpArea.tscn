@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bed47hnlku41f"]
+
+[ext_resource type="Script" uid="uid://cr04nt7qtxb8b" path="res://scenes/scripts/areas/AutoJumpArea.gd" id="1_autojump"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_area"]
+size = Vector3(2, 1, 2)
+
+[node name="AutoJumpArea" type="Area3D"]
+script = ExtResource("1_autojump")
+# Only detect bodies on HUMAN layer (1<<1 == 2)
+collision_mask = 2
+
+[node name="AutoJumpArea#CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_area")

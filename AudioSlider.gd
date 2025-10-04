@@ -34,5 +34,5 @@ func _apply_custom_theme() -> void:
 	add_theme_icon_override("grabber_highlight", GRABBER_HOVER)
 	add_theme_icon_override("grabber_pressed", GRABBER_PRESSED)
 
-func _on_value_changed(value: float) -> void:
-	AudioServer.set_bus_volume_db(bus_index, linear_to_db(value))
+func _on_value_changed(new_value: float) -> void:
+	AudioServer.set_bus_volume_db(bus_index, linear_to_db(new_value))

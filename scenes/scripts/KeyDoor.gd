@@ -4,6 +4,8 @@ extends Node3D
 # Usage: set required_key_id in Inspector. Player must carry an item_type == "key" and item_id matches.
 
 @export var required_key_id: String = "red_key"
+# When false, the door behaves as already unlocked and does not require a key
+@export var require_key: bool = true
 @export var open_on_unlock: bool = true
 @export var consume_key: bool = true
 @export var open_rotation_degrees: float = 90.0
@@ -36,6 +38,10 @@ extends Node3D
 
 @export var require_interact_press: bool = false
 
+# Optional lock mesh that will be hidden once unlocked/opened
+@export var lock_mesh_path: NodePath
+@export var auto_hide_lock_on_unlock: bool = true
+
 var _is_unlocked: bool = false
 var _is_open: bool = false
 var _target_rot: Basis
@@ -47,10 +53,14 @@ var _open_sfx: AudioStreamPlayer3D
 var _locked_sfx: AudioStreamPlayer3D
 var _locked_sfx_next_time: float = 0.0
 var _helper_anim_active: int = 0 # 1=open via helper, -1=close via helper, 0=idle
+var _lock_mesh: Node3D
 
 func _ready():
 	_closed_rot = global_transform.basis.orthonormalized()
 	_target_rot = _closed_rot
+	# If key is not required, treat as unlocked from the start
+	if not require_key:
+		_is_unlocked = true
 	# Resolve AnimationPlayer if any
 	if animation_player_path != NodePath(""):
 		_anim = get_node_or_null(animation_player_path) as AnimationPlayer
@@ -84,6 +94,30 @@ func _ready():
 		if _use_area:
 			_use_area.body_entered.connect(_on_use_area_body_entered)
 			_use_area.body_exited.connect(_on_use_area_body_exited)
+	# Resolve optional lock mesh
+	_resolve_lock_mesh()
+	# If already unlocked (e.g., require_key=false), hide lock
+	if _is_unlocked and auto_hide_lock_on_unlock:
+		_hide_lock_mesh()
+
+func _resolve_lock_mesh() -> void:
+	_lock_mesh = null
+	if lock_mesh_path != NodePath(""):
+		_lock_mesh = get_node_or_null(lock_mesh_path) as Node3D
+	if _lock_mesh == null:
+		_lock_mesh = get_node_or_null("LockMesh") as Node3D
+	if _lock_mesh == null:
+		var door := get_node_or_null("doorway(Clone)/door")
+		if door:
+			_lock_mesh = door.get_node_or_null("LockMesh") as Node3D
+	if debug_log:
+		print("[KeyDoor:%s] Lock mesh resolved: %s" % [name, str(_lock_mesh)])
+
+func _hide_lock_mesh() -> void:
+	if not auto_hide_lock_on_unlock:
+		return
+	if _lock_mesh:
+		_lock_mesh.visible = false
 
 func _process(delta: float) -> void:
 	# Skip manual rotation if using animation
@@ -142,21 +176,26 @@ func try_interact(player: Node) -> bool:
 	if require_human_crosshair and not _is_crosshair_on_self(player):
 		if debug_log: print("[KeyDoor:%s] FAIL: crosshair not on door" % name)
 		return false
+	# If the door does not require a key, ensure it's marked unlocked and proceed
+	if not require_key:
+		_is_unlocked = true
 	# Toggle close when already open
 	if _is_open and allow_human_close:
 		if debug_log: print("[KeyDoor:%s] Closing door" % name)
 		_start_close_helper()
 		return true
-	# If unlocked already, just open without a key
+	# If unlocked already, just hide lock (if any) and open without a key
 	if _is_unlocked and not _is_open:
 		if debug_log: print("[KeyDoor:%s] Already unlocked, opening" % name)
+		_hide_lock_mesh()
 		_start_open_helper()
 		return true
-	# If player has correct key, mark unlocked, consume if needed, and open
+	# If player has correct key, mark unlocked, consume if needed, hide lock, and open
 	if _player_has_required_key(player):
 		_is_unlocked = true
 		if debug_log: print("[KeyDoor:%s] Key matched. Unlocking & opening. consume_key=%s" % [name, str(consume_key)])
 		_consume_key_if_needed(player)
+		_hide_lock_mesh()
 		_start_open_helper()
 		return true
 	if debug_log:
@@ -241,6 +280,7 @@ func _unlock(player: Node, key_item: Node):
 		# Ask player to clear carried item if that was the key
 		if player.has_method("get_carried_item") and player.get_carried_item() == key_item and player.has_method("clear_carried_item"):
 			player.clear_carried_item()
+	_hide_lock_mesh()
 	if open_on_unlock:
 		_open()
 
@@ -249,6 +289,7 @@ func _open():
 		return
 	_is_open = true
 	_play_open_sfx()
+	_hide_lock_mesh()
 	if use_animation and _anim and _anim.has_animation(open_animation):
 		_anim.speed_scale = animation_speed
 		_anim.play(open_animation)
@@ -340,6 +381,7 @@ func _finalize_open_helper() -> void:
 		co.set_deferred("disabled", true)
 	# Keep mesh visible so the open animation leaves the door visible
 	_is_open = true
+	_hide_lock_mesh()
 
 func _finalize_close_helper() -> void:
 	var co := _find_first_collision()

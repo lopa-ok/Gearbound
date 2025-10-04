@@ -20,7 +20,7 @@ glow_enabled = true
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8xg12"]
 albedo_color = Color(0.254911, 0.580709, 0.341783, 1)
 
-[node name="TestLevel" type="Node3D"]
+[node name="TestLevel2" type="Node3D"]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.904827, 0.425779, 1.86114e-08, 0, -4.37114e-08, 1, 0.425779, 0.904827, 3.95512e-08, 0, 0, 0)

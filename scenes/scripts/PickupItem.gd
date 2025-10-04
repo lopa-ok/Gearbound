@@ -11,8 +11,13 @@ extends Node3D
 # Per-item carry alignment (used by HumanPlayer when carried in hand)
 @export var carry_item_offset: Vector3 = Vector3.ZERO
 @export var carry_item_rotation_deg: Vector3 = Vector3.ZERO
+@export var carry_item_scale: Vector3 = Vector3(0.2, 0.2, 0.2) # per-item default; actual human-held scale forced to 0.1 in on_picked_up
 # Optional: separate visual to use while held in hand (keeps world model intact)
 @export var held_model_scene: PackedScene
+# New: make carried items align like the crowbar in-hand
+@export var align_in_hand: bool = true
+# Hide original model while Human is holding this item
+@export var hide_model_when_human_holds: bool = true
 # Label facing
 @export var label_face_player: bool = true
 @export var label_face_yaw_only: bool = true
@@ -42,6 +47,7 @@ var _player_near: bool = false
 var _rb: RigidBody3D
 var _last_carried_state: bool = false
 var _held_visual: Node3D = null
+var _original_scale: Vector3 = Vector3.ONE
 
 func _ready():
 	add_to_group("pickup_item")
@@ -137,13 +143,43 @@ func on_picked_up(car: Node, carry_point: Node):
 		_rb.freeze = true
 		_rb.linear_velocity = Vector3.ZERO
 		_rb.angular_velocity = Vector3.ZERO
-	# If a held visual is configured, instance it and hide our existing meshes
-	if held_model_scene:
+	# Save original scale so we can restore it on drop
+	_original_scale = scale
+	# Decide behavior based on holder type
+	var is_human := car != null and car.is_in_group("human_player")
+	# If a held visual is configured, only instance it when not hiding for Human
+	if held_model_scene and not (is_human and hide_model_when_human_holds):
 		_create_held_visual()
 		_set_meshes_visible(self, false)
 		# Optionally apply color override to the held visual too
 		if override_material_color_enabled and override_apply_to_held_visual and _held_visual:
 			_apply_material_color_override(_held_visual)
+	# If Human and configured to hide, hide meshes and skip visual/alignment
+	elif is_human and hide_model_when_human_holds:
+		_set_meshes_visible(self, false)
+		return
+	# Apply in-hand alignment (like crowbar) when carried by the Human (and not hidden)
+	if align_in_hand and is_human and not hide_model_when_human_holds:
+		if _held_visual and _held_visual is Node3D:
+			var rot := Vector3(
+				deg_to_rad(carry_item_rotation_deg.x),
+				deg_to_rad(carry_item_rotation_deg.y),
+				deg_to_rad(carry_item_rotation_deg.z)
+			)
+			var b := Basis.from_euler(rot)
+			# Set local xform of the held visual (force 0.1 scale for Human)
+			(_held_visual as Node3D).transform = Transform3D(b.scaled(Vector3(0.1, 0.1, 0.1)), carry_item_offset)
+		else:
+			# No separate held visual: align the item node itself
+			var rot2 := Vector3(
+				deg_to_rad(carry_item_rotation_deg.x),
+				deg_to_rad(carry_item_rotation_deg.y),
+				deg_to_rad(carry_item_rotation_deg.z)
+			)
+			transform.basis = Basis.from_euler(rot2)
+			transform.origin = carry_offset + carry_item_offset
+			# Force smaller held scale for Human holders (0.1)
+			scale = Vector3(0.1, 0.1, 0.1)
 
 func on_dropped(by: Node, apply_throw: bool = true) -> void:
 	_carried = false
@@ -152,6 +188,8 @@ func on_dropped(by: Node, apply_throw: bool = true) -> void:
 		_held_visual.queue_free()
 		_held_visual = null
 	_set_meshes_visible(self, true)
+	# Restore original scale when dropped
+	scale = _original_scale
 	if use_physics and _rb:
 		_rb.freeze = false
 		_rb.sleeping = false
@@ -214,6 +252,29 @@ func get_item_type() -> String:
 
 func get_item_id() -> String:
 	return item_id
+
+func on_stored(by: Node) -> void:
+	# Called when placed into a container/inventory (car). Hide label and disable area.
+	_carried = false
+	_car_ref = by
+	_player_near = false
+	if _label: _label.visible = false
+	if _area: _area.monitoring = false
+	# Keep physics disabled while stored/displayed by car
+	if _static_body:
+		_static_body.set_deferred("disabled", true)
+	if use_physics and _rb:
+		_rb.freeze = true
+		_rb.linear_velocity = Vector3.ZERO
+		_rb.angular_velocity = Vector3.ZERO
+
+func on_removed_from_inventory(_by: Node, _carry_point: Node) -> void:
+	# Called when removed from container (e.g., taken from car roof). Re-enable interactions.
+	_car_ref = null
+	if _area:
+		_area.monitoring = true
+	if _static_body:
+		_static_body.set_deferred("disabled", false)
 
 func _ensure_rigidbody() -> void:
 	# Find an existing RigidBody3D or convert a StaticBody3D if present
@@ -320,7 +381,7 @@ func _apply_material_color_override(root: Node) -> void:
 		var mi := n as MeshInstance3D
 		if mi and mi.mesh:
 			var sc := mi.mesh.get_surface_count()
-			for s in sc:
+			for s in range(sc):
 				var mat: Material = mi.get_surface_override_material(s)
 				if mat == null and mi.mesh:
 					mat = mi.mesh.surface_get_material(s)

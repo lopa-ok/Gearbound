@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwviifv2p8fcr"]
+
+[ext_resource type="PackedScene" uid="uid://6vls210i6w6m" path="res://models/Furniture/GLTF format/wallWindow.glb" id="1_jxtkj"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kwiur"]
+transparency = 1
+albedo_color = Color(0, 0, 0, 0.12549)
+
+[node name="wallWindow" instance=ExtResource("1_jxtkj")]
+
+[node name="wallWindow(Clone)" parent="." index="0"]
+transform = Transform3D(0.000802831, 1, 0, -1, 0.000802831, 0, 0, 0, 1, 0, 1.02624, 0)
+
+[node name="window" parent="wallWindow(Clone)" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_kwiur")

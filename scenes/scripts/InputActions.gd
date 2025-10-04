@@ -8,7 +8,7 @@ func _enter_tree() -> void:
 	_ensure_action_key_list("ui_down", [KEY_S, KEY_DOWN])
 	# Gameplay actions
 	_ensure_action_key_list("interact", [KEY_F])
-	_ensure_action_key_list("drop", [KEY_G])
+	_ensure_action_key_list("drop", [KEY_G, KEY_Q])
 	_ensure_action_key_list("switch_player", [KEY_TAB])
 	_ensure_action_key_list("sprint", [KEY_SHIFT])
 	_ensure_action_key_list("jump", [KEY_SPACE])
@@ -20,6 +20,13 @@ func _enter_tree() -> void:
 	_ensure_action_joy_button("sprint", JoyButton.JOY_BUTTON_LEFT_SHOULDER)
 	_ensure_action_joy_button("jump", JoyButton.JOY_BUTTON_A)
 	_ensure_action_joy_button("crouch", JoyButton.JOY_BUTTON_B)
+	# Debug: list drop bindings
+	var events := InputMap.action_get_events("drop")
+	var keys := []
+	for e in events:
+		if e is InputEventKey:
+			keys.append((e as InputEventKey).physical_keycode)
+	print("[InputActions] drop bound keys:", keys)
 
 func _ready() -> void:
 	_ensure_interact_lmb()

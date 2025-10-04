@@ -54,7 +54,31 @@ func _resume() -> void:
 	get_tree().paused = false
 	# Restore previous mouse mode
 	Input.mouse_mode = _prev_mouse_mode
-	_set_crosshair_visible(true)
+	# Only restore crosshair if the Human is the active player
+	_set_crosshair_visible(_is_human_active())
+
+# Determine whether the Human is the active player (so crosshair should be visible)
+func _is_human_active() -> bool:
+	var ps := get_node_or_null("/root/PlayerSwitcher")
+	if ps:
+		if ps.has_method("is_rc_active"):
+			return not ps.is_rc_active()
+		if ps.has_method("is_human_active"):
+			return ps.is_human_active()
+		if "active" in ps:
+			var act = ps.get("active")
+			return act == &"human" or String(act) == "human"
+	# Fallback: infer from cameras
+	for car in get_tree().get_nodes_in_group("rc_player"):
+		var cam := car.get_node_or_null("CameraPivot/Camera3D")
+		if cam and cam is Camera3D and (cam as Camera3D).current:
+			return false
+	for human in get_tree().get_nodes_in_group("human_player"):
+		var hcam := human.get_node_or_null("Pivot/Camera3D")
+		if hcam and hcam is Camera3D and (hcam as Camera3D).current:
+			return true
+	# Default to Human not active (safer to keep crosshair hidden)
+	return false
 
 # Button handlers (connected by menu)
 func _on_resume() -> void:

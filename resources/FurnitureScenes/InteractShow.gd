@@ -1,35 +1,133 @@
 extends Area3D
 
-const SETTINGS_MENU = preload("res://scenes/SettingsMenu.tscn")
+const CHECKLIST_MENU = preload("res://scenes/ChecklistMenu.tscn")
 
 @onready var interact_icon: Label3D = $"../Label3D"
-var settings_menu: Control
+var checklist_menu: Control = null
 var player_inside := false
+var _paused_by_checklist := false
+var _prev_mouse_mode := Input.MOUSE_MODE_VISIBLE
 
 func _ready():
-	interact_icon.visible = false
-
-	# instance settings menu
-	settings_menu = SETTINGS_MENU.instantiate()
-	settings_menu.visible = false
-	call_deferred("add_child", settings_menu)  # safe way to add it
-
+	interact_icon.visible = true
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if player_inside and Input.is_action_just_pressed("interact"):
-		settings_menu.visible = true
+		_open_checklist()
 	
-	if settings_menu.visible and Input.is_action_just_pressed("ui_cancel"): # usually Esc
-		settings_menu.visible = false
+	if is_instance_valid(checklist_menu) and checklist_menu.visible and Input.is_action_just_pressed("ui_cancel"): # usually Esc
+		_close_checklist()
+	
+	_face_camera()
+
+func _open_checklist():
+	_ensure_checklist_menu()
+	if not is_instance_valid(checklist_menu):
+		return
+	checklist_menu.visible = true
+	# Pause the game if not already paused
+	if not get_tree().paused:
+		_paused_by_checklist = true
+		_prev_mouse_mode = Input.mouse_mode
+		get_tree().paused = true
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_set_crosshair_visible(false)
+
+func _close_checklist():
+	# We initiated close; just free and cleanup. Do NOT emit 'closed' here to avoid race/null.
+	if is_instance_valid(checklist_menu):
+		checklist_menu.queue_free()
+		checklist_menu = null
+	_cleanup_after_close()
+
+func _cleanup_after_close():
+	if _paused_by_checklist:
+		get_tree().paused = false
+		Input.mouse_mode = _prev_mouse_mode
+		_set_crosshair_visible(_is_human_active())
+		_paused_by_checklist = false
+
+func _ensure_checklist_menu() -> void:
+	if not is_instance_valid(checklist_menu):
+		var inst := CHECKLIST_MENU.instantiate()
+		if inst and inst is Control:
+			checklist_menu = inst
+			checklist_menu.visible = false
+			# Track when it closes itself (emits 'closed' then queue_free())
+			if checklist_menu.has_signal("closed"):
+				checklist_menu.connect("closed", Callable(self, "_on_checklist_closed"))
+			call_deferred("add_child", checklist_menu)  # safe way to add it
+
+func _on_checklist_closed() -> void:
+	# Menu freed itself; clear our reference and unpause
+	checklist_menu = null
+	_cleanup_after_close()
 
 func _on_body_entered(body: Node):
 	if body.is_in_group("player"):
 		player_inside = true
-		interact_icon.visible = true
+		# ...label stays visible regardless of distance...
 
 func _on_body_exited(body: Node):
 	if body.is_in_group("player"):
 		player_inside = false
-		interact_icon.visible = false
+		# ...label stays visible regardless of distance...
+
+# --- Camera-facing helpers ---
+func _get_current_camera() -> Camera3D:
+	var cam := get_viewport().get_camera_3d()
+	return cam
+
+func _face_camera() -> void:
+	if not is_instance_valid(interact_icon):
+		return
+	var cam := _get_current_camera()
+	if cam == null:
+		return
+	var cam_pos: Vector3 = cam.global_transform.origin
+	var label_pos: Vector3 = interact_icon.global_transform.origin
+	var dir := cam_pos - label_pos
+	# Constrain to yaw so the label doesn't pitch/roll
+	dir.y = 0.0
+	if dir.length() < 0.0001:
+		return
+	interact_icon.look_at(label_pos + dir, Vector3.UP)
+	# Label3D front faces +Z, look_at points -Z -> flip 180° around Y
+	interact_icon.rotate_y(PI)
+
+# --- UI helpers (mirrors PauseManager minimal behavior) ---
+func _set_crosshair_visible(vis: bool) -> void:
+	var did := false
+	for p in get_tree().get_nodes_in_group("human_player"):
+		if p and p.has_method("_set_crosshair_visible"):
+			p.call("_set_crosshair_visible", vis)
+			did = true
+	if not did:
+		for p in get_tree().get_nodes_in_group("human_player"):
+			var cross := p.get_node_or_null("CrosshairLayer/Crosshair")
+			if cross and cross is CanvasItem:
+				(cross as CanvasItem).visible = vis
+				did = true
+				break
+
+func _is_human_active() -> bool:
+	var ps := get_node_or_null("/root/PlayerSwitcher")
+	if ps:
+		if ps.has_method("is_rc_active"):
+			return not ps.is_rc_active()
+		if ps.has_method("is_human_active"):
+			return ps.is_human_active()
+		if "active" in ps:
+			var act = ps.get("active")
+			return act == &"human" or String(act) == "human"
+	for car in get_tree().get_nodes_in_group("rc_player"):
+		var cam := car.get_node_or_null("CameraPivot/Camera3D")
+		if cam and cam is Camera3D and (cam as Camera3D).current:
+			return false
+	for human in get_tree().get_nodes_in_group("human_player"):
+		var hcam := human.get_node_or_null("Pivot/Camera3D")
+		if hcam and hcam is Camera3D and (hcam as Camera3D).current:
+			return true
+	return false

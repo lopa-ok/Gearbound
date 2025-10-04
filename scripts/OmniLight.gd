@@ -11,7 +11,7 @@ func _ready():
 	if target != NodePath():
 		player = get_node(target)
 
-func _process(delta):
+func _process(_delta):
 	if player:
 		var dist = global_position.distance_to(player.global_position)
 
