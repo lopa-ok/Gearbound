@@ -22,6 +22,8 @@ func _ready():
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
+		if _pause_blocked():
+			return
 		toggle_pause()
 
 func toggle_pause() -> void:
@@ -158,3 +160,9 @@ func _set_crosshair_visible(vis: bool) -> void:
 			elif cross2 is CanvasItem:
 				cross2.visible = vis
 	return
+
+func _pause_blocked() -> bool:
+	for n in get_tree().get_nodes_in_group("no_pause"):
+		if is_instance_valid(n):
+			return true
+	return false

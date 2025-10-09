@@ -31,6 +31,12 @@ extends Node3D
 @export var physics_angular_damp: float = 0.2
 @export var physics_static_body_path: NodePath = NodePath("crowbar_metal_noise_hot_Inst_0/StaticBody3D")
 @export var physics_shape_path: NodePath = NodePath("crowbar_metal_noise_hot_Inst_0/StaticBody3D/CollisionShape3D")
+# New drop physics tuning
+@export var drop_forward_impulse: float = 3.5   # impulse added when dropping (in addition to throw_strength when applied)
+@export var drop_upward_impulse: float = 1.2    # small lift so it arcs a bit
+@export var drop_random_lateral_impulse: float = 1.0  # random sideways variation
+@export var drop_random_torque_impulse: float = 2.0   # random spin impulse
+@export var drop_force_scale_with_mass: bool = true   # scale impulses by rigidbody mass
 
 # --- Visual override (optional) ---
 @export var override_material_color_enabled: bool = false
@@ -119,7 +125,14 @@ func is_carried() -> bool:
 	return _carried
 
 func can_be_picked() -> bool:
-	return not _carried and _player_near
+	# Not pickable if currently carried, or not near the player, or if our Area is not monitoring, or node is hidden
+	if _carried:
+		return false
+	if not visible:
+		return false
+	if _area and not _area.monitoring:
+		return false
+	return _player_near
 
 func on_picked_up(car: Node, carry_point: Node):
 	_carried = true
@@ -193,22 +206,41 @@ func on_dropped(by: Node, apply_throw: bool = true) -> void:
 	if use_physics and _rb:
 		_rb.freeze = false
 		_rb.sleeping = false
+		var mass_scale := _rb.mass if drop_force_scale_with_mass else 1.0
 		if apply_throw:
-			var dir := Vector3.ZERO
-			var speed := throw_strength
+			# Base directional impulse using throw_strength (legacy behavior)
+			var fdir := Vector3.ZERO
 			if by and by is Node3D:
-				dir = (by as Node3D).global_transform.basis.z * -1.0
-			# Inherit velocity from carrier if available
-			if inherit_drop_velocity and by:
-				var v
-				if by.has_method("get_linear_velocity"):
-					v = by.call("get_linear_velocity")
-				else:
-					v = by.get("linear_velocity")
-				if typeof(v) == TYPE_VECTOR3:
-					_rb.linear_velocity = v
-			if dir != Vector3.ZERO:
-				_rb.apply_central_impulse(dir.normalized() * speed * _rb.mass)
+				fdir = (by as Node3D).global_transform.basis.z * -1.0
+			if fdir != Vector3.ZERO:
+				_rb.apply_central_impulse(fdir.normalized() * throw_strength * mass_scale)
+		# Always apply supplemental drop physics for a nicer tumble
+		var forward := Vector3.ZERO
+		if by and by is Node3D:
+			forward = (by as Node3D).global_transform.basis.z * -1.0
+		# Forward / upward / lateral impulses
+		var lateral_rand := Vector3(randf() - 0.5, 0.0, randf() - 0.5).normalized() if drop_random_lateral_impulse > 0.0 else Vector3.ZERO
+		var impulse := Vector3.ZERO
+		impulse += forward.normalized() * drop_forward_impulse * mass_scale if forward != Vector3.ZERO else Vector3.ZERO
+		impulse += Vector3.UP * drop_upward_impulse * mass_scale
+		impulse += lateral_rand * drop_random_lateral_impulse * mass_scale
+		if impulse != Vector3.ZERO:
+			_rb.apply_central_impulse(impulse)
+		# Random torque for spin
+		if drop_random_torque_impulse > 0.0:
+			var torque := Vector3(randf() - 0.5, randf() - 0.5, randf() - 0.5).normalized() * drop_random_torque_impulse * mass_scale
+			_rb.apply_torque_impulse(torque)
+		# Inherit linear velocity from carrier (after impulses so it adds up naturally)
+		if inherit_drop_velocity and by:
+			var v: Variant = null
+			if by.has_method("get_linear_velocity"):
+				v = by.call("get_linear_velocity")
+			elif "linear_velocity" in by:
+				v = by.linear_velocity
+			elif by is CharacterBody3D:
+				v = (by as CharacterBody3D).velocity
+			if typeof(v) == TYPE_VECTOR3:
+				_rb.linear_velocity += v
 	var wt: Transform3D = global_transform
 	# Reparent back to original parent (scene root or container)
 	if _original_parent:
@@ -267,10 +299,21 @@ func on_stored(by: Node) -> void:
 		_rb.freeze = true
 		_rb.linear_velocity = Vector3.ZERO
 		_rb.angular_velocity = Vector3.ZERO
+	# If holder exposes an inventory_hold node, parent there; otherwise, keep current parent
+	if by and by.has_method("get_node_or_null"):
+		var hold := by.get_node_or_null("InventoryHold")
+		if hold and hold is Node3D:
+			var wt := global_transform
+			reparent(hold)
+			global_transform = wt
+	# While stored, hide visuals (groups unchanged so roof display can still be found via logic)
+	visible = false
 
 func on_removed_from_inventory(_by: Node, _carry_point: Node) -> void:
 	# Called when removed from container (e.g., taken from car roof). Re-enable interactions.
 	_car_ref = null
+	# Restore pickup group and visibility; area monitoring and collisions too
+	visible = true
 	if _area:
 		_area.monitoring = true
 	if _static_body:

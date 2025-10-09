@@ -6,6 +6,8 @@ const SETTINGS_MENU = preload("res://scenes/SettingsMenu.tscn")
 var settings_menu: Control
 
 func _ready():
+	# Fade in when arriving at the main menu from another scene
+	Transition.play_transition("transition_in")
 	# Instance the settings menu and add it to the viewport root so it fills the screen
 	settings_menu = SETTINGS_MENU.instantiate()
 	# Defer add_child to avoid "parent busy" during scene setup

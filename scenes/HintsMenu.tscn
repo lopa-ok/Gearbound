@@ -1,0 +1,99 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/scripts/ui/HintsMenu.gd" id="1"]
+[ext_resource type="Theme" path="res://scenes/MainMenu.tres" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="Style_Panel"]
+bg_color = Color(0.639216, 0.360784, 0.203922, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.192157, 0.0823529, 0.0666667, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="Style_Button"]
+bg_color = Color(1, 0.92549, 0.694118, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.192157, 0.0823529, 0.0666667, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_size = 2
+
+[node name="HintsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2")
+script = ExtResource("1")
+visible = false
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1
+anchor_top = 0.1
+anchor_right = 0.9
+anchor_bottom = 0.9
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("Style_Panel")
+metadata/_edit_use_anchors_ = true
+
+[node name="RootMargin" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="RootVBox" type="VBoxContainer" parent="PanelContainer/RootMargin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TopBar" type="HBoxContainer" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="PanelContainer/RootMargin/RootVBox/TopBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "Hints"
+
+[node name="Spacer" type="Control" parent="PanelContainer/RootMargin/RootVBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Back" type="Button" parent="PanelContainer/RootMargin/RootVBox/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+theme_override_styles/normal = SubResource("Style_Button")
+text = "   Back   "
+
+[node name="Sep1" type="HSeparator" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="PanelContainer/RootMargin/RootVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="PanelContainer/RootMargin/RootVBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(600, 0)

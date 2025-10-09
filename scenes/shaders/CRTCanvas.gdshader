@@ -12,15 +12,15 @@ uniform float flicker_amount : hint_range(0.0, 1.0) = 0.03; // global brightness
 // CRT look controls
 uniform float curvature : hint_range(0.0, 1.0) = 0.12; // barrel distortion amount
 uniform float vignette_strength : hint_range(0.0, 1.0) = 0.45;
-uniform float scanline_intensity : hint_range(0.0, 1.0) = 0.35;
-uniform float scanline_density : hint_range(100.0, 3000.0) = 1200.0; // higher = more lines
+uniform float scanline_intensity : hint_range(0.0, 1.0) = 0.18;
+uniform float scanline_density : hint_range(100.0, 3000.0) = 450.0; // higher = more lines
 uniform float chroma_offset : hint_range(0.0, 3.0) = 0.6; // chromatic aberration strength
 
 // VHS specific controls
 uniform float vhs_wobble : hint_range(0.0, 1.0) = 0.4;       // horizontal UV wobble amount
 uniform float vhs_wobble_freq : hint_range(0.5, 8.0) = 2.0;  // wobble frequency
-uniform float vhs_tracking : hint_range(0.0, 1.0) = 0.35;    // horizontal line drift
-uniform float vhs_dropout : hint_range(0.0, 1.0) = 0.08;     // dark/bright dropout streaks
+uniform float vhs_tracking : hint_range(0.0, 1.0) = 0.15;    // horizontal line drift
+uniform float vhs_dropout : hint_range(0.0, 1.0) = 0.03;     // dark/bright dropout streaks
 uniform float vhs_bleed : hint_range(0.0, 1.0) = 0.25;       // horizontal bleeding (soft blur)
 
 // Utility
@@ -89,8 +89,10 @@ void fragment() {
 	col *= 1.0 - dropout * 0.6;
 
 	// Scanlines (animated a little to simulate refresh)
-	float scan = 1.0 - scanline_intensity * effect_strength * (0.5 + 0.5 * sin((uv.y + t * 0.5) * scanline_density));
-	col *= scan;
+	float scan_phase = (uv.y + t * 0.5) * scanline_density;
+	float scan_wave = 0.5 + 0.5 * sin(scan_phase);
+	float scan_mix = mix(1.0, scan_wave, scanline_intensity * effect_strength);
+	col *= scan_mix;
 
 	// Vignette
 	vec2 centered = uv - 0.5;
