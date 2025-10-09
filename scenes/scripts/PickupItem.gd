@@ -37,6 +37,7 @@ extends Node3D
 @export var drop_random_lateral_impulse: float = 1.0  # random sideways variation
 @export var drop_random_torque_impulse: float = 2.0   # random spin impulse
 @export var drop_force_scale_with_mass: bool = true   # scale impulses by rigidbody mass
+@export var drop_scale_default: float = 0.1  # Default world drop scale for all items (uniform). Adjust to make drops smaller/larger.
 
 # --- Visual override (optional) ---
 @export var override_material_color_enabled: bool = false
@@ -54,6 +55,8 @@ var _rb: RigidBody3D
 var _last_carried_state: bool = false
 var _held_visual: Node3D = null
 var _original_scale: Vector3 = Vector3.ONE
+# New: remember the scene’s original scale to restore on drop
+var _base_scale: Vector3 = Vector3.ONE
 
 func _ready():
 	add_to_group("pickup_item")
@@ -93,6 +96,8 @@ func _ready():
 	# Apply optional color override to meshes at startup
 	if override_material_color_enabled:
 		_apply_material_color_override(self)
+	# Capture the initial scene scale so we can always restore to it on drop
+	_base_scale = scale
 
 func _process(_delta: float) -> void:
 	# Label facing only; avoid any physics toggling here
@@ -156,7 +161,7 @@ func on_picked_up(car: Node, carry_point: Node):
 		_rb.freeze = true
 		_rb.linear_velocity = Vector3.ZERO
 		_rb.angular_velocity = Vector3.ZERO
-	# Save original scale so we can restore it on drop
+	# Save original scale so we can restore it on drop (kept for compatibility)
 	_original_scale = scale
 	# Decide behavior based on holder type
 	var is_human := car != null and car.is_in_group("human_player")
@@ -201,8 +206,8 @@ func on_dropped(by: Node, apply_throw: bool = true) -> void:
 		_held_visual.queue_free()
 		_held_visual = null
 	_set_meshes_visible(self, true)
-	# Restore original scale when dropped
-	scale = _original_scale
+	# Uniform, configurable drop scale for all items
+	scale = Vector3.ONE * max(drop_scale_default, 0.01)
 	if use_physics and _rb:
 		_rb.freeze = false
 		_rb.sleeping = false
@@ -439,3 +444,6 @@ func _apply_material_color_override(root: Node) -> void:
 				mi.set_surface_override_material(s, out_mat)
 		for c in n.get_children():
 			q.append(c)
+
+func get_base_scale() -> Vector3:
+	return _base_scale

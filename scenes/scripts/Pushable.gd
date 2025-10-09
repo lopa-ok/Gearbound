@@ -44,6 +44,10 @@ func _ready():
 	contact_monitor = true
 	if max_contacts_reported < 8:
 		max_contacts_reported = 8
+	# Connect impact callback once
+	var cb := Callable(self, "_on_body_entered")
+	if not body_entered.is_connected(cb):
+		body_entered.connect(cb)
 
 func _physics_process(delta: float) -> void:
 	if sleep_when_far:

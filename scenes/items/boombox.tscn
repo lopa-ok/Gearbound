@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqo5ffj6spem3"]
+
+[ext_resource type="PackedScene" uid="uid://bualtbii8ycyw" path="res://models/Models/Textures/Items/Boombox.glb" id="1_ga4dm"]
+
+[node name="Boombox" instance=ExtResource("1_ga4dm")]

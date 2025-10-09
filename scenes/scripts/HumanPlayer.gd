@@ -78,6 +78,8 @@ const PUSHABLE_LAYER := 1 << 3 # New layer for pushable dynamic objects
 @export var crouch_use_shape_check: bool = true
 @export var crouch_debug: bool = false
 @export var debug_drop_logs: bool = true
+@export var debug_interact_logs: bool = true
+@export var interact_cooldown_ms: int = 120
 # Stair/step assist (climb small steps without jumping)
 @export var step_assist_enabled: bool = true
 @export var step_max_height: float = 0.45
@@ -149,6 +151,8 @@ var _crosshair_pause_hidden: bool = false
 var _area_jump_timer: float = 0.0
 # Count of overlapping StepAssistArea volumes
 var _step_assist_area_count: int = 0
+var _bottom_msg: Control = null
+var _last_interact_ms_human: int = -1
 
 func _ready():
 	_pivot = $Pivot
@@ -549,7 +553,23 @@ func _play_idle_now() -> void:
 # --- Pickup / Carry ---
 func process_pickup_input():
 	if Input.is_action_just_pressed("interact"):
+		# Only allow if this human has control
+		if not _controls_enabled:
+			if debug_interact_logs:
+				print("[HumanPlayer] Interact ignored (controls disabled)")
+			return
+		var now_ms := Time.get_ticks_msec()
+		if _last_interact_ms_human >= 0 and now_ms - _last_interact_ms_human < interact_cooldown_ms:
+			if debug_interact_logs:
+				print("[HumanPlayer] Interact ignored due to cooldown (dt=%dms)" % [now_ms - _last_interact_ms_human])
+			return
+		_last_interact_ms_human = now_ms
 		if carried_item:
+			if debug_interact_logs:
+				var carried_name := "<none>"
+				if carried_item != null:
+					carried_name = str(carried_item.name)
+				print("[HumanPlayer] Interact with carried_item=%s" % [carried_name])
 			if _try_use_carried_on_target(): return
 			var look_target: Node3D = _raycast_pickup_item()
 			if not look_target: look_target = _get_nearest_pickup_item()
@@ -560,14 +580,25 @@ func process_pickup_input():
 				_pick_up_item(look_target)
 		else:
 			var hit := _raycast_interact_target()
+			if debug_interact_logs:
+				print("[HumanPlayer] Interact pressed. hit=%s carried_item=%s" % [str(hit), carried_item != null])
 			if hit:
 				var n: Node = hit
 				var depth := 0
+				var ok := false
 				while n and depth < 6:
 					if n.has_method("try_interact"):
-						if n.try_interact(self): return
-					n = n.get_parent()
-					depth += 1
+						if debug_interact_logs:
+							print("[HumanPlayer] Calling try_interact on %s" % str(n))
+						ok = n.try_interact(self)
+						if debug_interact_logs:
+							print("[HumanPlayer] try_interact returned %s from %s" % [str(ok), str(n)])
+						if ok: return
+					n = n.get_parent(); depth += 1
+				# If we aimed at a door/lock but interaction failed, show bottom message with key requirement (if any)
+				var hint := _compute_key_hint_for_target(hit)
+				if not ok and hint != "" and _bottom_msg and _bottom_msg.has_method("show_message"):
+					_bottom_msg.call("show_message", hint, 1.0)
 			var look_target2: Node3D = _raycast_pickup_item()
 			if not look_target2: look_target2 = _get_nearest_pickup_item()
 			if look_target2:
@@ -758,22 +789,44 @@ func _update_carried_item_transform():
 					print("[CarryDebug] Anchor drift from bone ", carry_bone_name, ": ", diff)
 
 func _try_use_carried_on_target() -> bool:
-	var space := get_world_3d().direct_space_state
-	var from := global_transform.origin + Vector3.UP * 1.3
-	var to := from + -transform.basis.z.normalized() * interact_range
+	# Use the camera (crosshair) ray so aim matches what the player sees
+	var cam := _cam
+	if cam == null:
+		cam = get_viewport().get_camera_3d()
+	if cam == null:
+		if debug_interact_logs:
+			print("[HumanPlayer] use_carried aborted: no camera")
+		return false
+	var from := cam.global_transform.origin
+	var to := from + -cam.global_transform.basis.z * interact_range
 	var q := PhysicsRayQueryParameters3D.create(from, to)
 	var excl := []
-	if self is CollisionObject3D: excl.append(self.get_rid())
+	if self is CollisionObject3D:
+		excl.append(self.get_rid())
 	q.exclude = excl
 	q.collide_with_areas = true
-	var hit := space.intersect_ray(q)
+	q.collide_with_bodies = true
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if debug_interact_logs:
+		var carried_name2 := "<none>"
+		if carried_item != null:
+			carried_name2 = str(carried_item.name)
+		print("[HumanPlayer] use_carried ray(cam): from=%s to=%s hit=%s carried=%s" % [str(from), str(to), str(hit), carried_name2])
 	if hit and hit.has("collider"):
 		var target: Node = hit["collider"]
 		var n: Node = target
 		var depth := 0
 		while n and depth < 5:
 			if n.has_method("try_interact"):
-				if n.try_interact(self): return true
+				if debug_interact_logs:
+					var carried_name3 := "<none>"
+					if carried_item != null:
+						carried_name3 = str(carried_item.name)
+					print("[HumanPlayer] use_carried calling try_interact on %s with carried=%s" % [str(n), carried_name3])
+				if n.try_interact(self):
+					if debug_interact_logs:
+						print("[HumanPlayer] use_carried -> success on %s" % str(n))
+					return true
 			n = n.get_parent(); depth += 1
 	return false
 
@@ -782,12 +835,24 @@ func _create_crosshair():
 		# Ensure vision overlay exists under the same layer
 		var lay := get_node("CrosshairLayer") as CanvasLayer
 		_ensure_human_vision_overlay(lay)
+		# Also ensure bottom message UI exists
+		_ensure_bottom_message_ui(lay)
 		return
 	var layer := CanvasLayer.new(); layer.name = "CrosshairLayer"; add_child(layer)
 	# Create the vision overlay first so the crosshair renders above it
 	_ensure_human_vision_overlay(layer)
+	# Create bottom message UI (stays below crosshair)
+	_ensure_bottom_message_ui(layer)
 	var ui := Control.new(); ui.name = "Crosshair"; ui.set_script(load("res://scenes/scripts/ui/CrosshairUI.gd")); layer.add_child(ui)
 	_crosshair = ui
+
+func _ensure_bottom_message_ui(layer: CanvasLayer) -> void:
+	if _bottom_msg and is_instance_valid(_bottom_msg): return
+	var bm := Control.new()
+	bm.name = "BottomMessages"
+	bm.set_script(load("res://scenes/scripts/ui/BottomMessages.gd"))
+	layer.add_child(bm)
+	_bottom_msg = bm
 
 func _set_crosshair_visible(v: bool):
 	if _crosshair and _crosshair.has_method("set_crosshair_visible"):
@@ -796,6 +861,9 @@ func _set_crosshair_visible(v: bool):
 func _update_crosshair_state(target: Node) -> void:
 	if _crosshair and _crosshair.has_method("set_interactable_hint"):
 		_crosshair.call("set_interactable_hint", target != null)
+	# Do not show mid-screen hint; ensure it stays cleared
+	if _crosshair and _crosshair.has_method("set_hint_text"):
+		_crosshair.call("set_hint_text", "")
 
 func _raycast_interact_target() -> Node3D:
 	if not _cam: return null
@@ -814,6 +882,64 @@ func _raycast_interact_target() -> Node3D:
 				return n
 			n = n.get_parent(); depth += 1
 	return null
+
+# Helper: turn ids like "white_key" into "white key"
+func _prettify_key_id(s: String) -> String:
+	var t := String(s).strip_edges()
+	t = t.replace("_", " ")
+	t = t.replace("-", " ")
+	# collapse any double spaces
+	while t.find("  ") != -1:
+		t = t.replace("  ", " ")
+	return t
+
+# New: compute a concise hint string for a target door/lock
+func _compute_key_hint_for_target(target: Node) -> String:
+	if target == null:
+		return ""
+	# Search upward through parents to find door/lock scripts
+	var n: Node = target
+	var depth := 0
+	while n and depth < 6:
+		# MultiLockDoor-style: show remaining locks if not enough are unlocked
+		var locks_required_v = n.get("locks_required")
+		var lock_paths_v = n.get("lock_paths")
+		if typeof(locks_required_v) == TYPE_INT and typeof(lock_paths_v) == TYPE_ARRAY:
+			var req: int = int(locks_required_v)
+			if req > 0:
+				var unlocked := 0
+				for p in lock_paths_v:
+					if typeof(p) == TYPE_NODE_PATH:
+						var l := n.get_node_or_null(p)
+						if l != null:
+							var is_unl := false
+							var v1 = l.get("is_unlocked")
+							if typeof(v1) == TYPE_BOOL:
+								is_unl = v1
+							else:
+								var v2 = l.get("unlocked")
+								if typeof(v2) == TYPE_BOOL:
+									is_unl = v2
+								elif l.has_method("is_unlocked"):
+									var r = l.call("is_unlocked")
+									if typeof(r) == TYPE_BOOL:
+										is_unl = r
+							if is_unl:
+								unlocked += 1
+				var remaining: int = max(0, req - unlocked)
+				if remaining > 0:
+					return "Locked: %d more" % remaining
+		# SimpleLock/KeyDoor-style: show required key id if present
+		var rid = n.get("required_key_id")
+		if typeof(rid) == TYPE_STRING and rid != "":
+			# If this is a SimpleLock and already unlocked, skip
+			var unlocked_flag_val = n.get("is_unlocked")
+			if typeof(unlocked_flag_val) == TYPE_BOOL and unlocked_flag_val:
+				pass
+			else:
+				return "Requires: %s" % _prettify_key_id(String(rid))
+		n = n.get_parent(); depth += 1
+	return ""
 
 func _update_safe_and_unstuck(delta: float) -> void:
 	_safe_timer += delta

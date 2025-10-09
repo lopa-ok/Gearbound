@@ -1,9 +1,9 @@
-[gd_scene load_steps=166 format=4 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=168 format=4 uid="uid://bchw5g5rjommu"]
 
 [ext_resource type="Script" uid="uid://0qhdd6qs7nag" path="res://scenes/scripts/room_level.gd" id="1_a4r2b"]
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
 [ext_resource type="PackedScene" uid="uid://bya7fkjtkijcy" path="res://resources/FurnitureScenes/BookcaseLow.tscn" id="2_1pyxk"]
-[ext_resource type="PackedScene" path="res://scenes/ui/HoldStatusUI.tscn" id="2_5fkql"]
+[ext_resource type="PackedScene" uid="uid://dv882yb4ng7f0" path="res://scenes/ui/HoldStatusUI.tscn" id="2_5fkql"]
 [ext_resource type="PackedScene" uid="uid://b5rj5d51ceyp7" path="res://scenes/CreditsTrigger.tscn" id="2_y3odk"]
 [ext_resource type="PackedScene" uid="uid://c2dlr2udwovwb" path="res://resources/FurnitureScenes/Desk.tscn" id="3_0cs01"]
 [ext_resource type="PackedScene" uid="uid://n16r124sohdv" path="res://resources/FurnitureScenes/DeskChair.tscn" id="3_jcleb"]
@@ -93,6 +93,7 @@
 [ext_resource type="PackedScene" uid="uid://dofr8rr7ano5i" path="res://scenes/Mouse.tscn" id="67_fsq0r"]
 [ext_resource type="PackedScene" uid="uid://buenfoikg5nyy" path="res://resources/FurnitureScenes/kitchenMicrowave.tscn" id="70_5672m"]
 [ext_resource type="PackedScene" uid="uid://byp8qxlermkx8" path="res://resources/FurnitureScenes/kitchenCabinetUpperDouble.tscn" id="71_30v2i"]
+[ext_resource type="PackedScene" uid="uid://cenq3k41w6iw0" path="res://scenes/items/CassetteTape.tscn" id="71_ud7p7"]
 [ext_resource type="PackedScene" uid="uid://bimghcox3056y" path="res://resources/FurnitureScenes/kitchenCoffeeMachine.tscn" id="72_od0ho"]
 [ext_resource type="PackedScene" uid="uid://riwjkokpqjfb" path="res://resources/FurnitureScenes/SquareRug2.tscn" id="73_lhdtq"]
 [ext_resource type="PackedScene" uid="uid://c2m53t2vpowo5" path="res://resources/FurnitureScenes/Hood.tscn" id="74_8l8aa"]
@@ -116,6 +117,7 @@
 [ext_resource type="Script" uid="uid://ia7tbehihhjk" path="res://scenes/scripts/areas/StepAssistArea.gd" id="110_58kuv"]
 [ext_resource type="PackedScene" uid="uid://o71pg06aqn54" path="res://scenes/KeyDoor3.tscn" id="111_wkugw"]
 [ext_resource type="AudioStream" uid="uid://bddbvcuqg7lp2" path="res://resources/Music/beep.mp3" id="116_fr86t"]
+[ext_resource type="PackedScene" uid="uid://6p6rot5bnn7o" path="res://scenes/CassettePlayer.tscn" id="117_lcv0w"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -902,7 +904,7 @@ transform = Transform3D(-8.30516e-07, -19, 0, 19, -8.30516e-07, 0, 0, 0, 19, -24
 transform = Transform3D(3.24816e-14, -7.43093e-07, -17, -17, -7.43093e-07, 0, -7.43093e-07, 17, -7.43093e-07, -26.117, 4.36012, 20.361)
 
 [node name="books6" parent="Level" instance=ExtResource("19_d5y4t")]
-transform = Transform3D(17, 1.41982e-21, 6.20624e-29, 0, -7.43094e-07, 17, 1.41982e-21, -17, -7.43094e-07, -101.489, 6.88877, 4.52405)
+transform = Transform3D(17, 1.41982e-21, 6.20624e-29, 0, -7.43094e-07, 17, 1.41982e-21, -17, -7.43094e-07, -101.489, 3.2697, 4.52405)
 
 [node name="books7" parent="Level" instance=ExtResource("19_d5y4t")]
 transform = Transform3D(17, 1.41982e-21, 6.20624e-29, 0, -7.43094e-07, 17, 1.41982e-21, -17, -7.43094e-07, -99.4151, 10.5274, 4.52405)
@@ -1129,7 +1131,7 @@ transform = Transform3D(10.6066, 0, 10.6066, 0, 15, 0, -10.6066, 0, 10.6066, -13
 required_key_id = "white_key"
 
 [node name="KeyItem" parent="Level" instance=ExtResource("51_aleum")]
-transform = Transform3D(0.199746, -1.52838e-05, 0.0100706, 1.14811e-05, 0.2, 7.581e-05, -0.0100706, -7.51358e-05, 0.199746, -99.3679, 13.0469, 3.76468)
+transform = Transform3D(0.199746, -1.52838e-05, 0.0100706, 1.14811e-05, 0.2, 7.581e-05, -0.0100706, -7.51358e-05, 0.199746, -99.3679, 12.8536, 3.76468)
 item_id = "white_key"
 
 [node name="KeyItem2" parent="Level" instance=ExtResource("51_aleum")]
@@ -1231,7 +1233,7 @@ transform = Transform3D(-15, 0, -0.00888729, 0, 15, 0, 0.00888729, 0, -15, -114.
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -100.37, 9.00145, 3.22921)
 
 [node name="coconut2" parent="Level" instance=ExtResource("61_0al2h")]
-transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -97.7412, 5.1612, 3.69296)
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -97.7412, 1.54213, 3.69296)
 
 [node name="Sketchfab_Scene" parent="Level" instance=ExtResource("62_1v2lh")]
 transform = Transform3D(-0.0608173, -0.195425, 0.21934, -0.288068, 0.0835939, -0.00539405, -0.0576046, -0.21171, -0.204599, -25.5496, 2.02665, -14.4615)
@@ -1798,8 +1800,10 @@ transform = Transform3D(-1.30734, 0, -14.9429, 0, 15, 0, 14.9429, 0, -1.30734, -
 [node name="computerMouse" parent="Level" instance=ExtResource("67_fsq0r")]
 transform = Transform3D(-0.0926757, 0, 14.9997, 0, 15, 0, -14.9997, 0, -0.0926757, -26.8365, 5.3711, 16.4649)
 
-[node name="cardboardBoxClosed22" parent="Level" instance=ExtResource("37_a8jfo")]
-transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -84.3337, -0.322481, 1.46576)
+[node name="CassetteTape" parent="Level" instance=ExtResource("71_ud7p7")]
+transform = Transform3D(-0.244232, 0, 0.053394, 0, 0.25, 0, -0.053394, 0, -0.244232, -99.9331, 5.44058, 2.93639)
+item_type = "cassette_tape"
+item_id = "cassette_tape_1"
 
 [node name="Object_4" type="MeshInstance3D" parent="."]
 transform = Transform3D(7, 0, 0, 0, -3.0598e-07, 7, 0, -7, -3.0598e-07, -117.064, -5.87852, -4.906)
@@ -3643,6 +3647,7 @@ transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -112.3
 
 [node name="KeyDoor" parent="KeypadDoorDemo" instance=ExtResource("111_wkugw")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 6.41885, 0, 0)
+required_key_id = "Keypad Code"
 
 [node name="Keypad" parent="KeypadDoorDemo" instance=ExtResource("109_u22yy")]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 2.34569, 7.49696, 0)
@@ -3650,3 +3655,6 @@ target_door_path = NodePath("../KeyDoor")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="KeypadDoorDemo/Keypad"]
 stream = ExtResource("116_fr86t")
+
+[node name="CassettePlayer" parent="." instance=ExtResource("117_lcv0w")]
+transform = Transform3D(2.76095, 0, 2.89433, 0, 4, 0, -2.89433, 0, 2.76095, -111.902, 6.96462, -18.1265)

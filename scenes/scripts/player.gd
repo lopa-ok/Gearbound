@@ -137,6 +137,8 @@ var crt_enabled: bool = true
 @export var crt_flicker_amount: float = 0.02
 
 @export var debug_drop_logs: bool = true
+@export var interact_cooldown_ms: int = 120
+var _last_interact_ms_rc: int = -1
 
 func _get_engine_sfx() -> AudioStreamPlayer3D:
 	if _engine_sfx == null or not is_instance_valid(_engine_sfx):
@@ -397,8 +399,15 @@ func get_carried_item():
 	return carried_item
 
 func process_pickup_input():
+	# Only when RC is active
+	if not _is_active_rc:
+		return
 	# Interact: use carried on target, or swap with nearest (drop current then pick up new), or pick up if empty.
 	if Input.is_action_just_pressed("interact"):
+		var now_ms := Time.get_ticks_msec()
+		if _last_interact_ms_rc >= 0 and now_ms - _last_interact_ms_rc < interact_cooldown_ms:
+			return
+		_last_interact_ms_rc = now_ms
 		if carried_item:
 			if _try_use_carried_on_target():
 				return

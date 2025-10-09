@@ -14,6 +14,18 @@ extends Control
 @export var default_icon: Texture2D
 @export var icon_overrides: Dictionary = {} # { item_id: Texture2D }
 @export var icon_size: Vector2 = Vector2(24, 24)
+@export var icon_scale: float = 1.0
+@export var icon_padding: Vector2 = Vector2.ZERO
+# Select how icons fit inside the rect (valid TextureRect modes only)
+@export_enum("KeepAspectCentered", "KeepAspect", "Scale", "Keep", "KeepCentered", "Tile") var icon_stretch_mode: String = "KeepAspectCentered"
+# Responsive sizing: compute icon size as a percentage of the viewport (or fixed pixels)
+@export_enum("Pixels", "PercentHeight", "PercentWidth") var icon_size_mode: String = "PercentHeight"
+@export var icon_size_percent: float = 3.0  # percent of viewport height/width depending on mode
+@export var icon_min_px: int = 16
+@export var icon_max_px: int = 96
+# Per-item scaling overrides
+@export var type_icon_scale_overrides: Dictionary = { "tape": 1.0 } # e.g., { "tape": 1.0 }
+@export var id_icon_scale_overrides: Dictionary = {} # e.g., { "cassette_001": 0.25 }
 # --- New: type-based icon control ---
 @export var icon_by_type: bool = true
 @export var type_icon_folder: String = "res://resources/Icons"
@@ -23,6 +35,7 @@ extends Control
 	"crowbar": "crowbar",
 	"flashlight": "flashlight",
 	"box": "box",
+	"tape": "tape",
 	"generic": "item"
 }
 @export var show_only_active: bool = true
@@ -72,10 +85,8 @@ func _ready() -> void:
 	# Layout defaults
 	_human_icon.position = Vector2(8, 6)
 	_car_icon.position = Vector2(8, 26)
-	_human_icon.size = icon_size
-	_car_icon.size = icon_size
-	_human_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_car_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_apply_icon_stretch_mode()
+	_update_icon_sizes()
 	if _human_label: _human_label.position = Vector2(36, 8)
 	if _car_label: _car_label.position = Vector2(36, 28)
 	# Initial visibility
@@ -84,6 +95,78 @@ func _ready() -> void:
 	_human_icon.visible = show_icons
 	_car_icon.visible = show_icons
 
+func _notification(what):
+	if what == NOTIFICATION_RESIZED:
+		_update_icon_sizes()
+
+func _apply_icon_stretch_mode() -> void:
+	var mode := TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	match icon_stretch_mode:
+		"KeepAspectCentered":
+			mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		"KeepAspect":
+			mode = TextureRect.STRETCH_KEEP_ASPECT
+		"Scale":
+			mode = TextureRect.STRETCH_SCALE
+		"Keep":
+			mode = TextureRect.STRETCH_KEEP
+		"KeepCentered":
+			mode = TextureRect.STRETCH_KEEP_CENTERED
+		"Tile":
+			mode = TextureRect.STRETCH_TILE
+		_:
+			mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	for rect in [_human_icon, _car_icon]:
+		if rect == null: continue
+		rect.stretch_mode = mode
+
+func _compute_icon_base_size() -> Vector2:
+	var vp := get_viewport()
+	var vp_size: Vector2 = vp.get_visible_rect().size if vp else Vector2(1280, 720)
+	var px: float = icon_size.x
+	match icon_size_mode:
+		"PercentWidth":
+			px = vp_size.x * (icon_size_percent * 0.01)
+		"PercentHeight":
+			px = vp_size.y * (icon_size_percent * 0.01)
+		_:
+			px = icon_size.x
+	px = clamp(px, float(icon_min_px), float(icon_max_px))
+	return Vector2(px, px)
+
+func _update_icon_sizes() -> void:
+	var base := _compute_icon_base_size()
+	var s: Vector2 = base * float(max(icon_scale, 0.1))
+	var inner := Vector2(max(0.0, s.x - icon_padding.x * 2.0), max(0.0, s.y - icon_padding.y * 2.0))
+	for rect in [_human_icon, _car_icon]:
+		if rect == null: continue
+		rect.custom_minimum_size = inner
+		rect.size = inner
+
+func _apply_icon_size_for(rect: TextureRect, item: Node) -> void:
+	if rect == null:
+		return
+	var base := _compute_icon_base_size()
+	var override_scale := _get_scale_override(item)
+	var total_scale := float(max(icon_scale * override_scale, 0.1))
+	var s: Vector2 = base * total_scale
+	var inner := Vector2(max(0.0, s.x - icon_padding.x * 2.0), max(0.0, s.y - icon_padding.y * 2.0))
+	rect.custom_minimum_size = inner
+	rect.size = inner
+
+func _get_scale_override(item: Node) -> float:
+	if item == null:
+		return 1.0
+	var id := _item_id(item)
+	if id != "" and id_icon_scale_overrides.has(id):
+		var v = id_icon_scale_overrides[id]
+		return float(v) if typeof(v) in [TYPE_FLOAT, TYPE_INT] else 1.0
+	var t := _item_type(item)
+	if t != "" and type_icon_scale_overrides.has(t):
+		var vt = type_icon_scale_overrides[t]
+		return float(vt) if typeof(vt) in [TYPE_FLOAT, TYPE_INT] else 1.0
+	return 1.0
+
 func _process(delta: float) -> void:
 	if get_tree().paused and not show_when_paused:
 		return
@@ -91,6 +174,8 @@ func _process(delta: float) -> void:
 	if _t < update_interval:
 		return
 	_t = 0.0
+	_apply_icon_stretch_mode()
+	_update_icon_sizes()
 	_update_texts()
 
 func _update_texts() -> void:
@@ -133,7 +218,12 @@ func _update_texts() -> void:
 		_car_label.text = label_prefix_car + (car_id if car_id != "" else "None")
 	# Icons: visible only if holding something; prefer camera-ancestry; fallback to active role
 	if _human_icon:
-		_human_icon.texture = _get_icon_for_type(human_type) if icon_by_type else _get_icon_for_id(human_id)
+		var human_tex: Texture2D = _get_icon_for_item(carried_human)
+		if human_tex == null:
+			human_tex = _get_icon_for_type(human_type) if icon_by_type else _get_icon_for_id(human_id)
+		_human_icon.texture = human_tex
+		# Apply per-item scale override
+		_apply_icon_size_for(_human_icon, carried_human)
 		var show_h := show_icons and carried_human != null
 		if show_only_active:
 			if cam_in_human or cam_in_car:
@@ -142,7 +232,12 @@ func _update_texts() -> void:
 				show_h = show_h and (_get_active_role() == "human")
 		_human_icon.visible = show_h
 	if _car_icon:
-		_car_icon.texture = _get_icon_for_type(car_type) if icon_by_type else _get_icon_for_id(car_id)
+		var car_tex: Texture2D = _get_icon_for_item(carried_car)
+		if car_tex == null:
+			car_tex = _get_icon_for_type(car_type) if icon_by_type else _get_icon_for_id(car_id)
+		_car_icon.texture = car_tex
+		# Apply per-item scale override
+		_apply_icon_size_for(_car_icon, carried_car)
 		var show_c := show_icons and carried_car != null
 		if show_only_active:
 			if cam_in_human or cam_in_car:
@@ -235,6 +330,26 @@ func _has_any(a: Dictionary, b: Dictionary) -> bool:
 		if a.has(k):
 			return true
 	return false
+
+# Try to get a Texture2D icon directly from the item node via its data or exported property
+func _get_icon_for_item(item: Node) -> Texture2D:
+	if item == null:
+		return null
+	# 1) If the item exposes get_inventory_data with an 'icon' Texture2D, use it
+	if item.has_method("get_inventory_data"):
+		var d = item.get_inventory_data()
+		if typeof(d) == TYPE_DICTIONARY:
+			if d.has("icon") and d["icon"] is Texture2D:
+				return d["icon"]
+			if d.has("icon_path") and typeof(d["icon_path"]) == TYPE_STRING and d["icon_path"] != "":
+				if ResourceLoader.exists(d["icon_path"]):
+					var tex := load(d["icon_path"])
+					if tex is Texture2D:
+						return tex
+	# 2) If the node has an exported 'inventory_icon' property, prefer it
+	if "inventory_icon" in item and item.inventory_icon is Texture2D:
+		return item.inventory_icon
+	return null
 
 func _get_icon_for_type(t: String) -> Texture2D:
 	if t == "":
