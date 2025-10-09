@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=7 format=3 uid="uid://dkf88k4vtclv1"]
 
-[ext_resource type="FontFile" uid="uid://bawps12vrrkqg" path="res://Fonts/redaction-35_5/ttf/redaction-35-latin-700-normal.ttf" id="1_p0kpm"]
+[ext_resource type="FontFile" uid="uid://b6vcdxebt273f" path="res://Fonts/redaction-35_5/ttf/redaction-35-latin-400-normal.ttf" id="1_reg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_viowm"]
 content_margin_left = 4.0
@@ -94,8 +94,8 @@ Button/constants/align_to_largest_stylebox = 0
 Button/constants/h_separation = 4
 Button/constants/icon_max_width = 0
 Button/constants/outline_size = 0
-Button/font_sizes/font_size = 16
-Button/fonts/font = ExtResource("1_p0kpm")
+Button/font_sizes/font_size = 20
+Button/fonts/font = ExtResource("1_reg")
 Button/styles/disabled = SubResource("StyleBoxFlat_viowm")
 Button/styles/focus = SubResource("StyleBoxFlat_1n6yq")
 Button/styles/hover = SubResource("StyleBoxFlat_yovvs")

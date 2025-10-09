@@ -13,9 +13,43 @@ extends Node3D
 # New: success feedback
 @export var success_color: Color = Color(0, 1, 0, 1)
 @export var success_hold: float = 0.4
+# New: after success, display this text and optionally lock input
+@export var success_text: String = "GOOD"
+@export var lock_on_success: bool = true
 
 # New: optional link to a KeyDoor node to open on success
 @export var target_door_path: NodePath
+
+# New: randomize code each game and announce after 1 second
+@export var randomize_code_on_ready: bool = true
+
+# New: audio SFX
+@export var success_sfx: AudioStream
+@export var success_volume_db: float = 0.0
+@export var fail_sfx: AudioStream
+@export var fail_volume_db: float = 0.0
+# Default click SFX used by buttons if they have none set
+@export var button_click_sfx: AudioStream
+@export var button_click_volume_db: float = 0.0
+# Optional shared AudioStreamPlayer(3D) to play all keypad sounds
+@export var sfx_player_path: NodePath
+# Attenuation for button beeps (in dB). -14 dB ≈ 80% quieter by amplitude.
+@export var button_click_attenuation_db: float = -14.0
+# Master gain applied to ALL keypad SFX (clicks, jingles, success/fail)
+@export var sfx_master_gain_db: float = -20.0
+# Optional audio bus to route keypad SFX through (e.g., "SFX")
+@export var sfx_bus_name: String = ""
+
+# New: success jingle
+@export var success_jingle_enabled: bool = true
+@export var success_jingle_beeps: int = 4
+@export var success_jingle_interval: float = 0.12
+# New: fail jingle controls (descending pitched beeps)
+@export var fail_jingle_enabled: bool = true
+@export var fail_jingle_beeps: int = 3
+@export var fail_jingle_interval: float = 0.1
+@export var fail_jingle_pitch_start: float = 1.0
+@export var fail_jingle_pitch_step: float = -0.12
 
 var entered: String = ""
 
@@ -23,6 +57,10 @@ var entered: String = ""
 var _validating: bool = false
 var _flash_tween: Tween
 var _default_modulate: Color = Color(1, 1, 1, 1)
+var _locked: bool = false
+
+# Notify listeners when the correct code changes (e.g., on randomize)
+signal code_changed(new_code: String)
 
 func _dbg(msg: String) -> void:
 	if debug_log:
@@ -38,6 +76,33 @@ func _ready() -> void:
 	# Auto-connect success -> door open
 	if not is_connected("code_success", Callable(self, "_on_code_success")):
 		connect("code_success", Callable(self, "_on_code_success"))
+	# Randomize the code at startup and announce it after a short delay
+	if randomize_code_on_ready:
+		_randomize_correct_code_and_announce()
+
+# Convenience API used by other scripts
+func set_correct_code(code: String) -> void:
+	correct_code = code
+	emit_signal("code_changed", correct_code)
+
+func get_correct_code() -> String:
+	return correct_code
+
+# Provide default button click SFX and shared player to child buttons
+func get_button_click_sfx() -> AudioStream:
+	return button_click_sfx
+
+func get_button_click_volume_db() -> float:
+	return button_click_volume_db
+
+func get_button_click_attenuation_db() -> float:
+	return button_click_attenuation_db
+
+func get_sfx_player() -> Node:
+	return _get_sfx_player_internal()
+
+func get_sfx_master_gain_db() -> float:
+	return sfx_master_gain_db
 
 func _ensure_display() -> Node:
 	if display_path != NodePath(""):
@@ -114,10 +179,14 @@ func _setup_buttons() -> void:
 
 func _on_button_pressed(digit: int) -> void:
 	_dbg("Button pressed digit=%d" % digit)
+	# Ignore input while validating or locked
+	if _locked:
+		_dbg("Ignoring input: keypad is locked")
+		return
 	_append_digit(digit)
 
 func _append_digit(d: int) -> void:
-	if _validating:
+	if _validating or _locked:
 		return
 	if entered.length() >= max_length:
 		return
@@ -127,11 +196,22 @@ func _append_digit(d: int) -> void:
 		_schedule_validate()
 
 func clear() -> void:
-	if _validating:
+	if _validating or _locked:
 		return
 	entered = ""
 	_update_display()
 	_reset_display_color()
+
+func reset_keypad() -> void:
+	# Explicitly unlock and clear the keypad state
+	_locked = false
+	entered = ""
+	_update_display()
+	_reset_display_color()
+	_dbg("Keypad reset: unlocked and cleared")
+
+func is_locked() -> bool:
+	return _locked
 
 func _update_display() -> void:
 	if not display:
@@ -148,6 +228,16 @@ func _update_display() -> void:
 		path_str = str(display.get_path())
 	_dbg("Display updated: '%s' on %s" % [txt, path_str])
 
+func _set_display_text(txt: String) -> void:
+	if not display:
+		return
+	if display is Label3D:
+		(display as Label3D).text = txt
+	elif display is Label:
+		(display as Label).text = txt
+	elif display is RichTextLabel:
+		(display as RichTextLabel).text = txt
+
 func _schedule_validate() -> void:
 	if _validating:
 		return
@@ -162,12 +252,27 @@ func _validate() -> void:
 	_dbg("Validating '%s' vs '%s' => %s" % [entered, correct_code, str(ok)])
 	if ok:
 		_set_display_color(success_color)
+		_set_display_text(success_text)
+		if success_jingle_enabled:
+			await _play_success_jingle()
+		else:
+			_play_stream(success_sfx, success_volume_db + button_click_attenuation_db, "SuccessSFX")
 		await get_tree().create_timer(max(success_hold, 0.0)).timeout
 		emit_signal_success()
+		# Lock and keep the success message by default
+		if lock_on_success:
+			_locked = true
+			_dbg("Keypad locked after success; display shows '%s'" % success_text)
+			return
+		# Otherwise, restore ready state
 		entered = ""
 		_update_display()
 		_reset_display_color()
 	else:
+		if fail_jingle_enabled:
+			await _play_fail_jingle()
+		else:
+			_play_stream(fail_sfx, fail_volume_db + button_click_attenuation_db, "FailSFX")
 		await _flash_fail()
 		emit_signal_fail()
 		entered = ""
@@ -207,6 +312,20 @@ func _flash_fail() -> void:
 		_flash_tween.tween_callback(Callable(self, "_reset_display_color"))
 		_flash_tween.tween_interval(flash_duration)
 	await _flash_tween.finished
+
+func _randomize_correct_code_and_announce() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var code := ""
+	for i in range(max(1, max_length)):
+		code += str(rng.randi_range(1, 6)) # digits restricted to 1..6
+	set_correct_code(code)
+	_dbg("Randomized correct_code assigned")
+	_announce_random_code_later(code)
+
+func _announce_random_code_later(code: String) -> void:
+	await get_tree().create_timer(1.0).timeout
+	print("[KeypadManager:%s] RANDOM CODE: %s" % [name, code])
 
 signal code_success()
 signal code_fail()
@@ -249,3 +368,100 @@ func _get_target_door() -> Node:
 			return n
 		n = n.get_parent()
 	return null
+
+func _ensure_player3d(name_: String) -> AudioStreamPlayer3D:
+	var p := get_node_or_null(name_) as AudioStreamPlayer3D
+	if p == null:
+		p = AudioStreamPlayer3D.new()
+		p.name = name_
+		add_child(p)
+	return p
+
+func _get_sfx_player_internal() -> Node:
+	if sfx_player_path != NodePath(""):
+		var n := get_node_or_null(sfx_player_path)
+		if n and (n is AudioStreamPlayer or n is AudioStreamPlayer3D):
+			return n
+	return null
+
+func _play_stream(stream: AudioStream, vol_db: float, local_name: String) -> void:
+	if stream == null:
+		return
+	var p := _get_sfx_player_internal()
+	var eff_vol := vol_db + sfx_master_gain_db
+	if p:
+		p.stream = stream
+		p.volume_db = eff_vol
+		if sfx_bus_name != "" and p.has_method("set_bus"):
+			p.bus = sfx_bus_name
+		p.play()
+		return
+	# Fallback: create/use a local 3D player
+	var p3 := _ensure_player3d(local_name)
+	p3.stream = stream
+	p3.volume_db = eff_vol
+	if sfx_bus_name != "":
+		p3.bus = sfx_bus_name
+	p3.play()
+
+func _play_success_jingle() -> void:
+	# Build a short jingle using the same beep as button clicks when available.
+	var stream: AudioStream = button_click_sfx if button_click_sfx != null else success_sfx
+	if stream == null:
+		return
+	# Apply ~80% attenuation to the jingle as well
+	var vol: float
+	if stream == success_sfx:
+		vol = success_volume_db + button_click_attenuation_db
+	else:
+		vol = button_click_volume_db + button_click_attenuation_db
+	var count: int = max(1, success_jingle_beeps)
+	var gap: float = max(0.01, success_jingle_interval)
+	for i in range(count):
+		_play_stream(stream, vol, "SuccessJingleSFX")
+		if i < count - 1:
+			await get_tree().create_timer(gap).timeout
+
+func _play_fail_jingle() -> void:
+	# Descending pitched beeps using the same click beep when available, else fail_sfx.
+	var stream: AudioStream = button_click_sfx if button_click_sfx != null else fail_sfx
+	if stream == null:
+		return
+	var base_vol: float
+	if stream == fail_sfx:
+		base_vol = fail_volume_db + button_click_attenuation_db
+	else:
+		base_vol = button_click_volume_db + button_click_attenuation_db
+	var count: int = max(1, fail_jingle_beeps)
+	var gap: float = max(0.01, fail_jingle_interval)
+	var pitch: float = max(0.1, fail_jingle_pitch_start)
+	for i in range(count):
+		_play_stream_with_pitch(stream, base_vol, "FailJingleSFX", pitch)
+		pitch = max(0.1, pitch + fail_jingle_pitch_step)
+		if i < count - 1:
+			await get_tree().create_timer(gap).timeout
+
+func _play_stream_with_pitch(stream: AudioStream, vol_db: float, local_name: String, pitch_scale: float) -> void:
+	if stream == null:
+		return
+	var p := _get_sfx_player_internal()
+	var eff_vol := vol_db + sfx_master_gain_db
+	if p:
+		p.stream = stream
+		p.volume_db = eff_vol
+		if p is AudioStreamPlayer:
+			(p as AudioStreamPlayer).pitch_scale = pitch_scale
+		elif p is AudioStreamPlayer3D:
+			(p as AudioStreamPlayer3D).pitch_scale = pitch_scale
+		if sfx_bus_name != "" and p.has_method("set_bus"):
+			p.bus = sfx_bus_name
+		p.play()
+		return
+	# Fallback: create/use a local 3D player
+	var p3 := _ensure_player3d(local_name)
+	p3.stream = stream
+	p3.volume_db = eff_vol
+	p3.pitch_scale = pitch_scale
+	if sfx_bus_name != "":
+		p3.bus = sfx_bus_name
+	p3.play()

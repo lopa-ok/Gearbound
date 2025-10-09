@@ -331,20 +331,39 @@ func _ensure_anim_connected(ap: AnimationPlayer) -> void:
 		ap.animation_finished.connect(_on_keydoor_anim_finished)
 
 func _find_first_mesh() -> MeshInstance3D:
+	# Try direct children first
 	for c in get_children():
 		var m := c as MeshInstance3D
 		if m:
 			return m
+	# Fallback: breadth-first search among descendants
+	var q: Array = []
+	for c in get_children(): q.append(c)
+	while q.size() > 0:
+		var n = q.pop_front()
+		if n is MeshInstance3D:
+			return n
+		for c2 in n.get_children(): q.append(c2)
 	return null
 
 func _find_first_collision() -> CollisionObject3D:
+	# Try a common direct child first
 	var co: CollisionObject3D = get_node_or_null("StaticBody3D") as CollisionObject3D
 	if co:
 		return co
+	# Check direct children
 	for c in get_children():
 		var cc := c as CollisionObject3D
 		if cc:
 			return cc
+	# Fallback: breadth-first search among descendants
+	var q: Array = []
+	for c in get_children(): q.append(c)
+	while q.size() > 0:
+		var n = q.pop_front()
+		if n is CollisionObject3D:
+			return n
+		for c2 in n.get_children(): q.append(c2)
 	return null
 
 func _start_open_helper() -> void:

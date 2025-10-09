@@ -1,8 +1,9 @@
-[gd_scene load_steps=64 format=4 uid="uid://40rqok16gjee"]
+[gd_scene load_steps=65 format=4 uid="uid://40rqok16gjee"]
 
 [ext_resource type="Texture2D" uid="uid://mfic53oq5x30" path="res://models/Furniture/GLTF format/Low Poly Keypad Panel Updated_Image_0.png" id="1_qtovj"]
 [ext_resource type="Texture2D" uid="uid://de84dq5cji5nr" path="res://models/Furniture/GLTF format/Low Poly Keypad Panel Updated_Image_1.png" id="2_p2kgs"]
 [ext_resource type="Script" uid="uid://cp2dh77jajjsa" path="res://scenes/scripts/keypad/KeypadButton.gd" id="2_udccu"]
+[ext_resource type="AudioStream" uid="uid://bddbvcuqg7lp2" path="res://resources/Music/beep.mp3" id="3_eqe6i"]
 [ext_resource type="Script" uid="uid://b48y2df3hxa40" path="res://scenes/scripts/keypad/KeypadManager.gd" id="3_kpman"]
 [ext_resource type="FontFile" uid="uid://df22yxnq5tf86" path="res://Fonts/ds_digital/DS-DIGI.TTF" id="5_aslj1"]
 
@@ -914,13 +915,17 @@ shadow_mesh = SubResource("ArrayMesh_u4l6u")
 
 [node name="Keypad" type="Node3D"]
 script = ExtResource("3_kpman")
+correct_code = "4211"
 display_path = NodePath("Label3D")
+button_click_sfx = ExtResource("3_eqe6i")
 
 [node name="1_button" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.889149, 0, 0, 0, 1.13546, 0, 0, 0, 0.246414, -2.64114, 11.8063, 0.900052)
 mesh = SubResource("ArrayMesh_bo8p2")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="1_button"]
 
@@ -932,6 +937,8 @@ transform = Transform3D(0.899568, 0, 0, 0, 1.14877, 0, 0, 0, 0.249302, 0.0122905
 mesh = SubResource("ArrayMesh_2o2kr")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="2_button"]
 
@@ -943,6 +950,8 @@ transform = Transform3D(1.01171, 0, 0, 0, 1.15866, 0, 0, 0, 0.251449, 2.6386, 11
 mesh = SubResource("ArrayMesh_71ors")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="3_button"]
 
@@ -954,6 +963,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, -2.64114, 8.6682
 mesh = SubResource("ArrayMesh_sewxk")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="4_button"]
 
@@ -965,6 +976,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, 0, 8.6412, 0.900
 mesh = SubResource("ArrayMesh_grnv1")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="5_button"]
 
@@ -976,6 +989,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, 2.62368, 8.6412,
 mesh = SubResource("ArrayMesh_67vvm")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="6_button"]
 
@@ -987,6 +1002,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, -2.64114, 5.3128
 mesh = SubResource("ArrayMesh_inmy5")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="7_button"]
 
@@ -998,6 +1015,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, 0, 5.31282, 0.90
 mesh = SubResource("ArrayMesh_5il1w")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="8_button"]
 
@@ -1009,6 +1028,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, 2.62914, 5.31282
 mesh = SubResource("ArrayMesh_v6vuj")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="9_button"]
 
@@ -1020,6 +1041,8 @@ transform = Transform3D(1, 0, 0, 0, 1.27702, 0, 0, 0, 0.277135, -0.0558515, 2.03
 mesh = SubResource("ArrayMesh_5ureg")
 skeleton = NodePath("")
 script = ExtResource("2_udccu")
+click_sfx = ExtResource("3_eqe6i")
+click_volume_db = -60.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="0_button"]
 
@@ -1037,7 +1060,8 @@ mesh = SubResource("ArrayMesh_06tap")
 skeleton = NodePath("")
 
 [node name="Label3D" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.67438, 15.4156, 0.134936)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.67438, 15.192, 0.134936)
+text = "Lopa"
 font = ExtResource("5_aslj1")
 font_size = 600
 horizontal_alignment = 0

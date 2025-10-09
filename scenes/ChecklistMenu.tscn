@@ -105,7 +105,7 @@ theme_override_constants/separation = 14
 
 [node name="Hint" type="Label" parent="PanelContainer/RootMargin/RootVBox"]
 layout_mode = 2
-text = "These are your current goals."
+text = "You can check the hints menu for help with tasks."
 
 [node name="StoryOverlay" type="Control" parent="."]
 z_index = 100

@@ -3,6 +3,7 @@ extends CharacterBody3D
 const WORLD_LAYER := 1 << 0
 const HUMAN_LAYER := 1 << 1
 const CAR_LAYER := 1 << 2
+const PUSHABLE_LAYER := 1 << 3 # New layer for pushable dynamic objects
 
 @export var move_speed: float = 8.0
 @export var sprint_multiplier: float = 1.6
@@ -82,6 +83,8 @@ const CAR_LAYER := 1 << 2
 @export var step_max_height: float = 0.45
 @export var step_check_forward_distance: float = 0.6
 @export var step_up_boost: float = 3.0
+# When true, step assist only works while inside one or more StepAssistArea(s)
+@export var step_assist_requires_area: bool = false
 
 # --- Human vision overlay settings ---
 @export var human_vision_enabled: bool = false
@@ -144,6 +147,8 @@ var _standing_full_height: float = -1.0
 var _crosshair_pause_hidden: bool = false
 # Area-triggered jump timer (separate from input jump buffer)
 var _area_jump_timer: float = 0.0
+# Count of overlapping StepAssistArea volumes
+var _step_assist_area_count: int = 0
 
 func _ready():
 	_pivot = $Pivot
@@ -167,10 +172,13 @@ func _ready():
 	_setup_carry_bone_attachment()
 	add_to_group("human_player")
 	add_to_group("player")
+	add_to_group("players") # ensure compatibility with Pushable.gd expectation
 	# --- Collision setup: avoid human <-> car pushing ---
 	# Ensure Human is on HUMAN layer (and default WORLD), and do not collide with CAR layer.
 	collision_layer |= (WORLD_LAYER | HUMAN_LAYER)
 	collision_mask &= ~CAR_LAYER
+	# Ensure we collide with pushables
+	collision_mask |= PUSHABLE_LAYER
 	# ---------------------------------------------------
 	if show_crosshair:
 		_create_crosshair()
@@ -430,6 +438,14 @@ func request_jump(force: bool = false) -> void:
 	# Schedule a jump via the area-specific timer so it does not interfere with input buffer
 	_area_jump_timer = max(_area_jump_timer, 0.05)
 
+# --- Public API: Step Assist area gating ---
+## Called by StepAssistArea when the player enters/exits such an area.
+func step_assist_area_enter() -> void:
+	_step_assist_area_count += 1
+
+func step_assist_area_exit() -> void:
+	_step_assist_area_count = max(0, _step_assist_area_count - 1)
+
 func _resolve_anim_names():
 	if _anim_player == null: return
 	_idle_anim = _find_first_anim(idle_anim_candidates)
@@ -566,6 +582,7 @@ func _raycast_pickup_item() -> Node3D:
 	var q := PhysicsRayQueryParameters3D.create(from, to)
 	q.exclude = [get_rid()]
 	q.collide_with_areas = true
+	q.collide_with_bodies = true
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
 	if hit and hit.has("collider"):
 		var n: Node = hit["collider"]
@@ -787,6 +804,7 @@ func _raycast_interact_target() -> Node3D:
 	var q := PhysicsRayQueryParameters3D.create(from, to)
 	q.exclude = [get_rid()]
 	q.collide_with_areas = true
+	q.collide_with_bodies = true
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
 	if hit and hit.has("collider"):
 		var n: Node = hit["collider"]
@@ -1208,7 +1226,11 @@ func set_human_vision_grain(amount: float) -> void:
 
 # Attempt to nudge up small steps when a low obstacle is in front but there is clearance at knee height
 func _apply_step_assist(_delta: float) -> void:
+	# Respect global toggle
 	if not step_assist_enabled:
+		return
+	# If area-gated, only enable when inside one or more StepAssistArea volumes
+	if step_assist_requires_area and _step_assist_area_count <= 0:
 		return
 	if not is_on_floor():
 		return

@@ -38,6 +38,9 @@ extends Node3D
 
 # Behavior
 @export var queue_free_on_open: bool = false
+# New: control whether the mesh is hidden and/or collisions disabled after opening
+@export var hide_mesh_on_open: bool = false
+@export var disable_collisions_on_open: bool = true
 
 var _is_open := false
 var _is_prying := false
@@ -243,20 +246,25 @@ func _on_anim_finished(anim_name: StringName) -> void:
 		_finalize_open()
 
 func _finalize_open() -> void:
-	# Hide mesh and disable collisions once open
-	var mesh: MeshInstance3D = null
-	if _pivot:
-		for c in _pivot.get_children():
-			mesh = c as MeshInstance3D
-			if mesh:
-				break
-	if mesh == null:
-		mesh = get_node_or_null("MeshInstance3D") as MeshInstance3D
-	if mesh:
-		mesh.visible = false
-	var sb := get_node_or_null("StaticBody3D") as CollisionObject3D
-	if sb:
-		sb.set_deferred("disabled", true)
+	# Optionally hide mesh and disable collisions once open
+	if hide_mesh_on_open:
+		var mesh: MeshInstance3D = null
+		if _pivot:
+			for c in _pivot.get_children():
+				mesh = c as MeshInstance3D
+				if mesh:
+					break
+		if mesh == null:
+			# Try common names or a direct MeshInstance3D under root
+			mesh = get_node_or_null("MeshInstance3D") as MeshInstance3D
+			if mesh == null:
+				mesh = get_node_or_null("Object_6") as MeshInstance3D
+		if mesh:
+			mesh.visible = false
+	
+	if disable_collisions_on_open:
+		_disable_all_colliders()
+	
 	# Consume key after a successful open
 	if _pending_consume_item:
 		var player := _find_player_holding(_pending_consume_item)
@@ -268,6 +276,17 @@ func _finalize_open() -> void:
 			_dbg("Consumed key item")
 	if queue_free_on_open:
 		queue_free()
+
+func _disable_all_colliders() -> void:
+	# Disable any CollisionObject3D descendants (StaticBody3D, Area3D, etc.)
+	var stack: Array = [self]
+	while stack.size() > 0:
+		var n = stack.pop_back()
+		for c in n.get_children():
+			stack.push_back(c)
+			var col := c as CollisionObject3D
+			if col:
+				col.set_deferred("disabled", true)
 
 func _on_use_area_body_entered(body: Node) -> void:
 	if _is_valid_player(body):

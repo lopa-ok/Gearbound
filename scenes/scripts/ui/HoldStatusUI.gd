@@ -10,13 +10,13 @@ extends Control
 # --- New icon options ---
 @export var show_text: bool = false
 @export var show_icons: bool = true
-@export var icon_folder: String = "res://resources/icons" # will try <folder>/<item_id>.png
+@export var icon_folder: String = "res://resources/Icons" # will try <folder>/<item_id>.png
 @export var default_icon: Texture2D
 @export var icon_overrides: Dictionary = {} # { item_id: Texture2D }
 @export var icon_size: Vector2 = Vector2(24, 24)
 # --- New: type-based icon control ---
 @export var icon_by_type: bool = true
-@export var type_icon_folder: String = "res://resources/icons"
+@export var type_icon_folder: String = "res://resources/Icons"
 @export var type_icon_overrides: Dictionary = {} # { item_type: Texture2D }
 @export var type_icon_fallback_names: Dictionary = {
 	"key": "key",
@@ -251,8 +251,54 @@ func _get_icon_for_id(id: String) -> Texture2D:
 		return icon_overrides[id]
 	return _load_icon_from_folder(icon_folder, id)
 
+func _find_dir_case_insensitive(folder: String) -> String:
+	# Try exact first
+	var test := DirAccess.open(folder)
+	if test != null:
+		return folder
+	# Resolve parent and leaf
+	var parent := folder.get_base_dir()
+	var leaf := folder.get_file()
+	var d := DirAccess.open(parent)
+	if d == null:
+		return folder
+	d.list_dir_begin()
+	var entry := d.get_next()
+	var found_name := leaf
+	while entry != "":
+		if d.current_is_dir():
+			if entry.to_lower() == leaf.to_lower():
+				found_name = entry
+				break
+		entry = d.get_next()
+	d.list_dir_end()
+	return parent.path_join(found_name)
+
 func _load_icon_from_folder(folder: String, base: String) -> Texture2D:
 	var try_ext := [".png", ".webp", ".jpg", ".jpeg"]
+	# Try to find correct-cased folder and file name by scanning the directory
+	var real_folder := _find_dir_case_insensitive(folder)
+	var d := DirAccess.open(real_folder)
+	if d != null:
+		d.list_dir_begin()
+		var entry := d.get_next()
+		var lower_base := base.to_lower()
+		var found_path := ""
+		while entry != "":
+			if not d.current_is_dir():
+				var dot := entry.rfind(".")
+				var stem := (entry.substr(0, dot) if dot >= 0 else entry)
+				var ext := (entry.substr(dot) if dot >= 0 else "")
+				if stem.to_lower() == lower_base and ext.to_lower() in try_ext:
+					found_path = real_folder.path_join(entry)
+					break
+			entry = d.get_next()
+		d.list_dir_end()
+		if found_path != "":
+			var tex0 := load(found_path)
+			if tex0 is Texture2D:
+				return tex0
+	# Fallback to direct paths (exact case)
 	for ext in try_ext:
 		var path := "%s/%s%s" % [folder, base, ext]
 		if ResourceLoader.exists(path):

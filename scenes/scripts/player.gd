@@ -522,9 +522,23 @@ func _get_nearest_pickup_item() -> Node3D:
 	var min_d = pickup_radius
 	for n in get_tree().get_nodes_in_group("pickup_item"):
 		if not n is Node3D: continue
+		# Skip items that are carried
 		if n.has_method("is_carried") and n.is_carried():
 			continue
-		if n.has_method("can_be_picked") and not n.can_be_picked():
+		# Skip hidden or non-monitoring items (likely stored)
+		var skip := false
+		if "visible" in n and not n.visible:
+			skip = true
+		else:
+			var ar := n.get_node_or_null("Area3D") as Area3D
+			if ar and not ar.monitoring:
+				skip = true
+		if skip:
+			continue
+		# Optional: if parented under InventoryHold of the car and not currently on roof display, skip
+		var par := n.get_parent()
+		if par and par.name == "InventoryHold":
+			# Items under InventoryHold are hidden reserve; don't consider them
 			continue
 		var d = global_position.distance_to(n.global_position)
 		if d <= pickup_radius and d < min_d:

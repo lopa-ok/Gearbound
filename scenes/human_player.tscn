@@ -768,6 +768,7 @@ footstep_streams_run = Array[AudioStream]([ExtResource("2_hbih7"), ExtResource("
 step_max_height = 10.0
 step_check_forward_distance = 2.5
 step_up_boost = 15.0
+step_assist_requires_area = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07232, 1.92634, -0.380524)

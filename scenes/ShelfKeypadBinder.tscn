@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/scripts/puzzle/ShelfKeypadBinder.gd" id="1"]
+
+[node name="ShelfKeypadBinder" type="Node3D"]
+script = ExtResource("1")
+item_group_name = "shelf_item"
+auto_update_on_ready = true
+# Set these in RoomLevel to the actual nodes
+# keypad_path = NodePath("/root/.../Keypad")
+# shelf_spawners_paths = [NodePath("/root/.../bookcaseOpen7/PlantSpawner"), ...]

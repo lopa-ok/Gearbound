@@ -26,3 +26,17 @@ func play_transition(anim_name: String) -> void:
 	anim.play(anim_name)
 	await anim.animation_finished
 	rect.visible = false
+
+# Instantly cover the screen with black without animation
+func cut_to_black() -> void:
+	if anim.is_playing():
+		anim.stop()
+	rect.visible = true
+	_set_shader_progress(1.0)
+
+# Instantly clear the screen (no overlay) without animation
+func cut_to_clear() -> void:
+	if anim.is_playing():
+		anim.stop()
+	_set_shader_progress(0.0)
+	rect.visible = false

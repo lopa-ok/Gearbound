@@ -40,7 +40,13 @@ func setup(manager_ref: Node, digit_value: int) -> void:
 	_create_hit_area()
 	_dbg("Setup complete. digit=%d" % _digit)
 
+func _is_locked() -> bool:
+	return _manager != null and _manager.has_method("is_locked") and _manager.call("is_locked")
+
 func press() -> void:
+	if _is_locked():
+		_dbg("Ignoring press: keypad is locked")
+		return
 	_infer_digit_from_name()
 	_dbg("Pressed. digit=%d" % _digit)
 	_play_click_sfx()
@@ -68,6 +74,8 @@ func get_digit() -> int:
 func try_interact(_player: Node) -> bool:
 	# HumanPlayer looks for nodes with try_interact() along the ray hit chain.
 	# Trigger on interact just-pressed to avoid repeats.
+	if _is_locked():
+		return false
 	if Input.is_action_just_pressed("interact"):
 		_dbg("Interact action detected from player -> press()")
 		press()
@@ -127,9 +135,35 @@ func _ensure_player3d(name_: String) -> AudioStreamPlayer3D:
 	return p
 
 func _play_click_sfx() -> void:
-	if click_sfx == null:
+	var stream: AudioStream = click_sfx
+	var vol: float = click_volume_db
+	# Fallback to manager defaults if per-button SFX is not assigned
+	if stream == null and _manager != null:
+		if _manager.has_method("get_button_click_sfx"):
+			stream = _manager.call("get_button_click_sfx")
+		if _manager.has_method("get_button_click_volume_db"):
+			vol = float(_manager.call("get_button_click_volume_db"))
+	# Apply attenuation (quieter) if provided by the manager
+	if _manager != null and _manager.has_method("get_button_click_attenuation_db"):
+		var att := float(_manager.call("get_button_click_attenuation_db"))
+		vol += att
+	# Apply keypad master gain if available
+	var master: float = 0.0
+	if _manager != null and _manager.has_method("get_sfx_master_gain_db"):
+		master = float(_manager.call("get_sfx_master_gain_db"))
+	vol += master
+	if stream == null:
 		return
+	# Prefer a shared SFX player provided by the manager, if any
+	if _manager != null and _manager.has_method("get_sfx_player"):
+		var shared = _manager.call("get_sfx_player")
+		if shared and (shared is AudioStreamPlayer or shared is AudioStreamPlayer3D):
+			shared.stream = stream
+			shared.volume_db = vol
+			shared.play()
+			return
+	# Fallback: local 3D player
 	var p := _ensure_player3d("ClickSFX")
-	p.stream = click_sfx
-	p.volume_db = click_volume_db
+	p.stream = stream
+	p.volume_db = vol
 	p.play()
