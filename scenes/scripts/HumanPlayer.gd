@@ -97,6 +97,9 @@ const PUSHABLE_LAYER := 1 << 3 # New layer for pushable dynamic objects
 @export var vision_grain: float = 0.0
 var _vision_rect: ColorRect = null
 
+# Tooltip options
+@export var show_tape_tooltips: bool = true
+
 var carried_item: Node3D = null
 var _pivot: Node3D
 var _cam: Camera3D
@@ -218,6 +221,8 @@ func _process(delta):
 		if target != _last_crosshair_target:
 			_update_crosshair_state(target)
 			_last_crosshair_target = target
+		# Always refresh tooltip while still looking at the target
+		_maybe_show_target_tooltip(target)
 		_crosshair_scan_t = max(0.0, crosshair_scan_interval)
 
 func _physics_process(delta):
@@ -1389,3 +1394,45 @@ func _apply_step_assist(_delta: float) -> void:
 		return
 	# Nudge upward to climb the step
 	_vel.y = max(_vel.y, step_up_boost)
+
+func _maybe_show_target_tooltip(target: Node) -> void:
+	if not show_tape_tooltips:
+		return
+	if _bottom_msg == null or not is_instance_valid(_bottom_msg):
+		return
+	if target == null:
+		return
+	var tape := _find_tape_node(target)
+	if tape == null:
+		return
+	# Skip if this tape is currently carried by the human
+	var carried := false
+	if ("_carried" in tape and tape._carried == true) and ("_car_ref" in tape and tape._car_ref == self):
+		carried = true
+	if carried:
+		return
+	var tname := ""
+	if "tape_name" in tape and typeof(tape.tape_name) == TYPE_STRING and tape.tape_name != "":
+		tname = str(tape.tape_name)
+	else:
+		tname = str(tape.name)
+	_bottom_msg.call("show_message", "Cassette: %s" % tname, 1.25)
+
+func _find_tape_node(node: Node) -> Node:
+	var n := node
+	var depth := 0
+	while n and depth < 6:
+		var is_tape := false
+		if n.has_method("get_item_type"):
+			var t = n.get_item_type()
+			if typeof(t) == TYPE_STRING and String(t) == "tape":
+				is_tape = true
+		elif "item_type" in n and typeof(n.item_type) == TYPE_STRING and n.item_type == "tape":
+			is_tape = true
+		# Heuristic fallback: cassette-specific properties
+		elif ("tape_stream" in n) or ("inventory_icon" in n and not n.has_method("get_item_type")):
+			is_tape = true
+		if is_tape:
+			return n
+		n = n.get_parent(); depth += 1
+	return null

@@ -21,7 +21,7 @@ const THROTTLE_TIME_FOR_MAX_SPindown := 3.0  # Throttle duration needed for max 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera_3d: Camera3D = $CameraPivot/Camera3D
 @onready var ray: RayCast3D = $CameraPivot/RayCast3D
-@onready var engine_sound: AudioStreamPlayer = $EngineSound
+@onready var engine_sound: AudioStreamPlayer3D = $EngineSound
 
 # Carry system (single slot)
 @export var pickup_radius: float = 2.5
@@ -55,6 +55,7 @@ var _switch_action_ready: bool = false
 @export var impact_sfx_bus: StringName = "SFX"
 @export var impact_stream: AudioStream
 @onready var impact_player: AudioStreamPlayer3D = get_node_or_null("ImpactSFX")
+@export var debug_impact_logs: bool = false
 
 @export var engine_bus_name: StringName = &"Car"
 
@@ -204,6 +205,16 @@ func _add_child_deferred(p: Node, c: Node) -> void:
 	if p and c:
 		p.call_deferred("add_child", c)
 
+func _ensure_impact_player() -> void:
+	if impact_player == null or not is_instance_valid(impact_player):
+		impact_player = AudioStreamPlayer3D.new()
+		impact_player.name = "ImpactSFX"
+		add_child(impact_player)
+	# Apply bus and stream
+	impact_player.bus = String(impact_sfx_bus)
+	if impact_stream and impact_player.stream != impact_stream:
+		impact_player.stream = impact_stream
+
 func _ready():
 	_ensure_switch_player_action()
 	# Scaling disabled (only applies if changed from 1.0)
@@ -231,6 +242,8 @@ func _ready():
 	if _switcher:
 		_switcher.connect("active_changed", Callable(self, "_on_active_changed"))
 	_on_active_changed(_switcher.active if _switcher else &"rc")
+	# Ensure impact player is present and configured
+	_ensure_impact_player()
 
 func _ensure_switch_player_action():
 	if _switch_action_ready:
@@ -312,12 +325,12 @@ func update_camera(delta):
 
 	# Camera collision check
 	ray.target_position = camera_offset
-	var desired_pos = camera_offset
+	var desired_pos: Vector3 = camera_offset
 	if ray.is_colliding():
-		var hit_pos = ray.get_collision_point()
-		var pivot_pos = camera_pivot.global_position
-		var dir = camera_offset.normalized()
-		var dist = pivot_pos.distance_to(hit_pos) - 0.3
+		var hit_pos: Vector3 = ray.get_collision_point()
+		var pivot_pos: Vector3 = camera_pivot.global_position
+		var dir: Vector3 = camera_offset.normalized()
+		var dist: float = pivot_pos.distance_to(hit_pos) - 0.3
 		desired_pos = dir * max(1.0, dist)  # never closer than 1m
 
 	# Smooth camera movement
@@ -327,7 +340,8 @@ func update_engine_audio(delta):
 	var throttle_input = Input.get_axis("ui_down", "ui_up")
 	var speed = linear_velocity.length()
 	var abs_throttle = abs(throttle_input)
-	var current_unix_time = Time.get_time_dict_from_system().get("unix", 0)
+	# Use a typed timestamp to avoid Variant inference warnings
+	var current_unix_time: float = float(Time.get_ticks_msec()) / 1000.0
 	
 	if abs_throttle > 0.05:
 		if not is_throttling:
@@ -404,21 +418,21 @@ func process_pickup_input():
 		return
 	# Interact: use carried on target, or swap with nearest (drop current then pick up new), or pick up if empty.
 	if Input.is_action_just_pressed("interact"):
-		var now_ms := Time.get_ticks_msec()
+		var now_ms: int = Time.get_ticks_msec()
 		if _last_interact_ms_rc >= 0 and now_ms - _last_interact_ms_rc < interact_cooldown_ms:
 			return
 		_last_interact_ms_rc = now_ms
 		if carried_item:
 			if _try_use_carried_on_target():
 				return
-			var nearest = _get_nearest_pickup_item()
+			var nearest: Node3D = _get_nearest_pickup_item()
 			if nearest and nearest != carried_item:
 				var new_item: Node3D = nearest
 				_drop_item()
 				_pick_up_item(new_item)
 			# else: keep holding current item
 		else:
-			var nearest2 = _get_nearest_pickup_item()
+			var nearest2: Node3D = _get_nearest_pickup_item()
 			if nearest2:
 				_pick_up_item(nearest2)
 
@@ -449,7 +463,7 @@ func process_drop_input():
 func _store_world_item(item: Node3D):
 	if inventory.size() >= inventory_max_size: return
 	# Collect data
-	var data := {}
+	var data: Dictionary = {}
 	if item.has_method("get_inventory_data"):
 		data = item.get_inventory_data()
 	else:
@@ -603,7 +617,7 @@ func inventory_store_carried_item():
 # Replace inventory_take_first_item to maintain display
 func inventory_take_first_item():
 	if inventory.is_empty(): return
-	var entry = inventory.pop_front()
+	var entry: Dictionary = inventory.pop_front()
 	var item: Node3D = entry["node"]
 	if not is_instance_valid(item):
 		_refresh_roof_items()
@@ -652,7 +666,7 @@ func get_inventory_summary() -> Array:
 # Optional helper to fully drop an inventory item to world
 func inventory_drop_item(index: int):
 	if index < 0 or index >= inventory.size(): return
-	var entry = inventory.pop_at(index)
+	var entry: Dictionary = inventory.pop_at(index)
 	var item: Node3D = entry["node"]
 	if not is_instance_valid(item): return
 	_displayed_items.erase(item)
@@ -690,7 +704,7 @@ func _place_item_on_ground(item: Node3D):
 	if item_body and item_body is CollisionObject3D:
 		exclude.append(item_body.get_rid())
 	query.exclude = exclude
-	var hit := space.intersect_ray(query)
+	var hit: Dictionary = space.intersect_ray(query)
 	if hit and hit.has("position"):
 		item.global_position = hit["position"] + Vector3.UP * 0.05
 
@@ -706,7 +720,7 @@ func _raycast_interact_target(max_dist: float) -> Node:
 		query.exclude = [self.get_rid()]
 	query.collide_with_areas = true
 	query.collide_with_bodies = true
-	var hit := space.intersect_ray(query)
+	var hit: Dictionary = space.intersect_ray(query)
 	if hit and hit.has("collider"):
 		var node: Node = hit["collider"]
 		# Walk up to find interactable (try_interact)
@@ -823,7 +837,7 @@ func _ground_snap(t: Transform3D) -> Transform3D:
 	if self is CollisionObject3D:
 		excl.append(self.get_rid())
 	q.exclude = excl
-	var hit := space.intersect_ray(q)
+	var hit: Dictionary = space.intersect_ray(q)
 	if hit and hit.has("position"):
 		var pos: Vector3 = hit["position"]
 		t.origin.y = pos.y + (unstuck_clearance_size.y * 0.5) + 0.05
@@ -845,30 +859,43 @@ func _is_pose_clear(t: Transform3D) -> bool:
 		excl.append(self.get_rid())
 	params.exclude = excl
 	var space := get_world_3d().direct_space_state
-	var res := space.intersect_shape(params, 4)
+	var res: Array = space.intersect_shape(params, 4)
 	return res.is_empty()
 
 # --- Impact SFX helper ---
 func _update_impact_sfx(delta: float) -> void:
+	_ensure_impact_player()
+	var cur_speed: float = linear_velocity.length()
+	# Cooldown step
 	if _impact_cd > 0.0:
 		_impact_cd = max(0.0, _impact_cd - delta)
-	var cur_speed: float = linear_velocity.length()
+	# Early-outs and configuration
+	if not impact_sfx_enabled or impact_player == null:
+		_prev_speed = cur_speed
+		return
+	# Ensure stream and bus
+	if impact_player.stream == null and impact_stream != null:
+		impact_player.stream = impact_stream
+	if impact_player.bus != String(impact_sfx_bus):
+		impact_player.bus = String(impact_sfx_bus)
+	# Compute deltas
 	var speed_drop: float = max(0.0, _prev_speed - cur_speed)
 	var had_contact := false
 	if has_method("get_contact_count"):
-		var cc = get_contact_count()
-		had_contact = cc > 0
-	# Consider also very large drops even if contact count isn't available
+		had_contact = get_contact_count() > 0
 	var big_drop := speed_drop >= (impact_sfx_min_speed_drop * 1.5)
-	if _impact_cd == 0.0 and impact_player and impact_player.stream and _prev_speed >= impact_sfx_min_prev_speed and speed_drop >= impact_sfx_min_speed_drop and (had_contact or big_drop):
-		# Scale volume and pitch by impact strength
+	# Trigger
+	if _impact_cd == 0.0 and impact_player.stream and _prev_speed >= impact_sfx_min_prev_speed and speed_drop >= impact_sfx_min_speed_drop and (had_contact or big_drop):
 		var strength: float = clampf(speed_drop / 12.0, 0.0, 1.0)
 		impact_player.volume_db = lerp(-12.0, -2.0, strength)
 		var pitch_jitter := 0.1
 		impact_player.pitch_scale = 1.0 + (randf() * 2.0 - 1.0) * pitch_jitter
 		impact_player.play()
 		_impact_cd = impact_sfx_cooldown
-		_prev_speed = cur_speed
+		if debug_impact_logs:
+			print("[RC][ImpactSFX] play drop=", speed_drop, " prev=", _prev_speed, " cur=", cur_speed, " contact=", had_contact)
+	# Always update previous speed for next frame
+	_prev_speed = cur_speed
 
 func _switch_to_human() -> void:
 	_ensure_switch_player_action()
@@ -892,7 +919,7 @@ func _get_crosshair() -> Node:
 	if _cross_ref == null or not is_instance_valid(_cross_ref):
 		_cross_ref = get_node_or_null("/root/CrosshairUI")
 		if _cross_ref == null:
-			var scr := load("res://scenes/scripts/ui/CrosshairUI.gd")
+			var scr: Script = load("res://scenes/scripts/ui/CrosshairUI.gd") as Script
 			if scr:
 				var ui: Control = scr.new()
 				ui.name = "CrosshairUI"
@@ -968,7 +995,7 @@ func _find_human_reference():
 		_human = get_node_or_null(human_node_path)
 	if _human == null:
 		# Fallback: first node in human_player group
-		var hs = get_tree().get_nodes_in_group("human_player")
+		var hs: Array = get_tree().get_nodes_in_group("human_player")
 		if hs.size() > 0:
 			_human = hs[0]
 
@@ -983,7 +1010,7 @@ func _process(_delta):
 func _ensure_fade_overlay() -> void:
 	if _fade_rect and is_instance_valid(_fade_rect):
 		return
-	var root := get_tree().root
+	var root: Viewport = get_tree().root
 	if _fade_layer == null or not is_instance_valid(_fade_layer):
 		_fade_layer = CanvasLayer.new()
 		_fade_layer.name = "SwitchFadeLayer"
@@ -1013,7 +1040,7 @@ func _play_switch_fade_in() -> void:
 		return
 	_fade_rect.visible = true
 	_fade_rect.modulate.a = 1.0
-	var tw := create_tween()
+	var tw: Tween = create_tween()
 	tw.tween_property(_fade_rect, "modulate:a", 0.0, switch_fade_in_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tw.finished.connect(Callable(self, "_cleanup_fade_overlay"))
 
@@ -1033,14 +1060,14 @@ func _ensure_crt_overlay() -> void:
 	if not crt_enabled:
 		return
 	# Reuse any existing root-level overlay to avoid duplicates across scene reloads
-	var root := get_tree().root
+	var root: Viewport = get_tree().root
 	if _crt_layer == null or not is_instance_valid(_crt_layer):
 		_crt_layer = root.get_node_or_null("CRTPassLayer") as CanvasLayer
 	if _crt_layer and is_instance_valid(_crt_layer) and (_crt_rect == null or not is_instance_valid(_crt_rect)):
 		_crt_rect = _crt_layer.get_node_or_null("CRTOverlay") as ColorRect
 	# If we already have a valid rect, just update params and exit
 	if _crt_rect and is_instance_valid(_crt_rect):
-		var mat_existing := _crt_rect.material as ShaderMaterial
+		var mat_existing: ShaderMaterial = _crt_rect.material as ShaderMaterial
 		if mat_existing:
 			mat_existing.set_shader_parameter("screen_alpha", 1.0)
 			mat_existing.set_shader_parameter("effect_strength", crt_effect_strength)
@@ -1073,7 +1100,7 @@ func _ensure_crt_overlay() -> void:
 	_crt_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_crt_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# Shader material
-	var mat := ShaderMaterial.new()
+	var mat: ShaderMaterial = ShaderMaterial.new()
 	mat.shader = load("res://scenes/shaders/CRTCanvas.gdshader")
 	mat.set_shader_parameter("screen_alpha", 1.0)
 	mat.set_shader_parameter("effect_strength", crt_effect_strength)

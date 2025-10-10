@@ -10,6 +10,9 @@ extends Node3D
 @export var consume_key: bool = true
 @export var open_rotation_degrees: float = 90.0
 @export var open_speed: float = 4.0
+# New: spawn opened at start (instant) or play the open animation at start
+@export var start_open: bool = false
+@export var start_open_play_anim: bool = false
 
 # Animation support
 @export var use_animation: bool = true
@@ -99,6 +102,29 @@ func _ready():
 	# If already unlocked (e.g., require_key=false), hide lock
 	if _is_unlocked and auto_hide_lock_on_unlock:
 		_hide_lock_mesh()
+	# NEW: optionally start opened
+	if start_open:
+		_is_unlocked = true
+		_hide_lock_mesh()
+		var ap := _get_anim_player()
+		var anim := _get_open_anim_name()
+		if use_animation and ap and ap.has_animation(anim):
+			if start_open_play_anim:
+				_helper_anim_active = 1
+				_ensure_anim_connected(ap)
+				ap.play(anim, -1.0, _get_anim_speed(), false)
+			else:
+				ap.play(anim)
+				var a := ap.get_animation(anim)
+				var len := a.length if a else 0.0
+				ap.seek(len, true)
+				ap.stop()
+		else:
+			# Snap rotation instantly to the open angle
+			var t := global_transform
+			t.basis = _closed_rot.rotated(Vector3.UP, deg_to_rad(open_rotation_degrees)).orthonormalized()
+			global_transform = t
+		_finalize_open_helper()
 
 func _resolve_lock_mesh() -> void:
 	_lock_mesh = null

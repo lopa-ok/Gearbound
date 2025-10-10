@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/scripts/audio/MainMenuMusic.gd" id="1"]
+
+[node name="MainMenuMusic" type="Node"]
+script = ExtResource("1")
+# Assign main_stream in the Inspector to your menu track
+fade_in = 1.0
+fade_out = 1.0
+priority = 100
+debug_log = false

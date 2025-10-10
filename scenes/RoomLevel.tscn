@@ -1,4 +1,4 @@
-[gd_scene load_steps=168 format=4 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=171 format=4 uid="uid://bchw5g5rjommu"]
 
 [ext_resource type="Script" uid="uid://0qhdd6qs7nag" path="res://scenes/scripts/room_level.gd" id="1_a4r2b"]
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
@@ -118,6 +118,8 @@
 [ext_resource type="PackedScene" uid="uid://o71pg06aqn54" path="res://scenes/KeyDoor3.tscn" id="111_wkugw"]
 [ext_resource type="AudioStream" uid="uid://bddbvcuqg7lp2" path="res://resources/Music/beep.mp3" id="116_fr86t"]
 [ext_resource type="PackedScene" uid="uid://6p6rot5bnn7o" path="res://scenes/CassettePlayer.tscn" id="117_lcv0w"]
+[ext_resource type="Script" uid="uid://dtqtdo36v81mb" path="res://scenes/scripts/areas/AreaMusic.gd" id="119_jsafe"]
+[ext_resource type="AudioStream" uid="uid://dxjuax5o18jc2" path="res://resources/Music/BgBass.mp3" id="120_kimfb"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ijewl"]
 sky_top_color = Color(0.258869, 0.313189, 0.388741, 1)
@@ -567,6 +569,9 @@ points = PackedVector3Array(46.2504, 4.69555, 43.5165, -51.0472, -3.27934, -50.5
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_adi1c"]
 size = Vector3(30.6761, 28.0531, 23.3968)
+
+[sub_resource type="BoxShape3D" id="1"]
+size = Vector3(31.0612, 18.4925, 40.1144)
 
 [node name="TestLevel" type="Node3D"]
 script = ExtResource("1_a4r2b")
@@ -1195,6 +1200,8 @@ transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -12
 
 [node name="KeyDoor2" parent="Level" instance=ExtResource("56_mm1pa")]
 transform = Transform3D(10.3835, 0, 10.8251, 0, 15, 0, -10.8251, 0, 10.3835, -144.966, -0.32248, 1.10615)
+start_open = true
+start_open_play_anim = true
 
 [node name="bookcaseOpen" parent="Level" instance=ExtResource("57_c265k")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -133.193, -0.322481, -56.1929)
@@ -1802,6 +1809,7 @@ transform = Transform3D(-0.0926757, 0, 14.9997, 0, 15, 0, -14.9997, 0, -0.092675
 
 [node name="CassetteTape" parent="Level" instance=ExtResource("71_ud7p7")]
 transform = Transform3D(-0.244232, 0, 0.053394, 0, 0.25, 0, -0.053394, 0, -0.244232, -99.9331, 5.44058, 2.93639)
+tape_name = "Intro v0.1"
 item_type = "cassette_tape"
 item_id = "cassette_tape_1"
 
@@ -3658,3 +3666,13 @@ stream = ExtResource("116_fr86t")
 
 [node name="CassettePlayer" parent="." instance=ExtResource("117_lcv0w")]
 transform = Transform3D(2.76095, 0, 2.89433, 0, 4, 0, -2.89433, 0, 2.76095, -111.902, 6.96462, -18.1265)
+
+[node name="AreaMusic" type="Area3D" parent="."]
+transform = Transform3D(0.994347, 0, 0.106177, 0, 1, 0, -0.106177, 0, 0.994347, -150.584, 1.3, -28.7108)
+script = ExtResource("119_jsafe")
+music_stream = ExtResource("120_kimfb")
+loop_music = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AreaMusic"]
+transform = Transform3D(0.996027, 0, -0.0890507, 0, 1, 0, 0.0890507, 0, 0.996027, -8.80319, 9.38605, -10.3223)
+shape = SubResource("1")
