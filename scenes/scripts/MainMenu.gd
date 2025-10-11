@@ -4,8 +4,14 @@ const WORLD = preload("res://scenes/RoomLevel.tscn")
 const SETTINGS_MENU = preload("res://scenes/SettingsMenu.tscn")
 
 var settings_menu: Control
+# New: defer focus until controller input is detected
+var _focus_given: bool = false
+var _menu_buttons: Array = []
 
 func _ready():
+	# Block pausing while main menu is active
+	add_to_group("no_pause")
+	set_process_input(true)
 	# Ensure controller/gamepad input mappings exist
 	if Engine.get_main_loop() != null:
 		ControllerSupport.ensure_input_map()
@@ -35,26 +41,34 @@ func _ready():
 			var c := p.get_node("CrosshairLayer/Crosshair") as Control
 			if c:
 				c.visible = false
-	# Focus and wire focus neighbors for controller navigation
+	# Focus graph for controller navigation, but do NOT grab focus now
 	var btn_new := get_node_or_null("NewGameButton") as Button
 	var btn_settings := get_node_or_null("SettingsButton") as Button
 	var btn_quit := get_node_or_null("QuitButton") as Button
-	var buttons: Array = []
-	if btn_new: buttons.append(btn_new)
-	if btn_settings: buttons.append(btn_settings)
-	if btn_quit: buttons.append(btn_quit)
-	for i in buttons.size():
-		var b: Button = buttons[i]
+	_menu_buttons.clear()
+	if btn_new: _menu_buttons.append(btn_new)
+	if btn_settings: _menu_buttons.append(btn_settings)
+	if btn_quit: _menu_buttons.append(btn_quit)
+	for i in _menu_buttons.size():
+		var b: Button = _menu_buttons[i]
 		b.focus_mode = Control.FOCUS_ALL
-		var prev: Button = buttons[(i - 1 + buttons.size()) % buttons.size()]
-		var next: Button = buttons[(i + 1) % buttons.size()]
+		var prev: Button = _menu_buttons[(i - 1 + _menu_buttons.size()) % _menu_buttons.size()]
+		var next: Button = _menu_buttons[(i + 1) % _menu_buttons.size()]
 		b.focus_neighbor_top = b.get_path_to(prev)
 		b.focus_neighbor_bottom = b.get_path_to(next)
-	if btn_new:
-		# Defer focus to ensure nothing steals it this frame
-		btn_new.call_deferred("grab_focus")
+	# Note: intentionally do not call grab_focus() here
+
+func _input(event: InputEvent) -> void:
+	# Consume pause immediately so PauseManager won't toggle
+	if event.is_action_pressed("pause"):
+		accept_event()
+		return
 
 func _unhandled_input(event):
+	# Give initial focus only after controller input
+	if not _focus_given and _is_controller_nav(event):
+		_give_initial_focus()
+		# Let the same input continue to navigate; do not mark handled here
 	# Block pause on main menu
 	if event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
@@ -71,6 +85,22 @@ func _unhandled_input(event):
 			(f as Button).emit_signal("pressed")
 			get_viewport().set_input_as_handled()
 			return
+
+func _is_controller_nav(event: InputEvent) -> bool:
+	var jb := event as InputEventJoypadButton
+	if jb and jb.pressed:
+		return true
+	var jm := event as InputEventJoypadMotion
+	if jm:
+		if (jm.axis == JOY_AXIS_LEFT_X or jm.axis == JOY_AXIS_LEFT_Y) and absf(jm.axis_value) > 0.2:
+			return true
+	return false
+
+func _give_initial_focus() -> void:
+	if _menu_buttons.size() > 0:
+		var first: Button = _menu_buttons[0]
+		first.grab_focus()
+		_focus_given = true
 
 func _on_new_game_button_pressed():
 	# Cache the SceneTree before awaiting, as this node may be temporarily removed from the tree

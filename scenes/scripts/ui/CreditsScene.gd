@@ -2,7 +2,7 @@
 extends Control
 
 @export_multiline var story_text: String = "[center][b]After countless rooms and locked doors...[/b]\nYou pieced together scattered clues,\ncracked the keypad, and found the way out.\n\nBut the house never wanted to trap you—\nit wanted to teach you how to look.\nEvery scrape on a hinge was a compass.\nEvery shadow on a shelf was a number waiting to be read.\nYou learned to stand still, to listen to the hum behind the walls,\nto count the beats of flickering lights,\nto measure the distance between silence and sound.\n\nYou pushed on when a puzzle mocked you,\nrewrote plans when a door refused to budge,\nand laughed at your own notes when a simple answer had been there all along.\n\nYou learned to carry less and notice more.\nThat the fastest route is often the one taken slowly, on purpose.\nThat curiosity is a key that never wears out.\n\nPast the final lock, you felt the room breathe with you:\npanels settling, circuits cooling, the space letting go.\nYou didn’t just exit—\nyou graduated from the maze.\n\n[b]Well done.[/b]\nTake this momentum with you.\nThere are more rooms in the world than walls.\n[/center]\n"
-@export_multiline var credits_text: String = "[center][b]Move faster[/b]\n\nDesign & Code: Lopa\n3D Assets: Youssef Hany + Various Authors\nMusic: Lopa\nSFX: Cisco\nMade for Shiba arcade\n\nThank you for playing!\n— Lopa[/center]\n"
+@export_multiline var credits_text: String = "[center][b]Gearbound[/b]\n\nDesign & Code: Lopa\n3D Assets: Youssef Hany + Various Authors\nMusic: Lopa\nSFX: Cisco\nMade for Shiba arcade\n\nThank you for playing!\n— Lopa[/center]\n"
 @export var allow_close: bool = false
 @export var return_scene_path: String = "res://scenes/MainMenu.tscn"
 @export var base_font_size: int = 40

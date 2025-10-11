@@ -6,7 +6,12 @@ signal closed
 	"Find Crowbar",
 	"Find White Key",
 	"Unlock White lock",
-	"Find Red, Blue, Green Keys",
+	"Find Blue Key",
+	"Find Orange Key",
+	"Unlock Orange Lock",
+	"Find Red Key",
+	"Check the Keypad out",
+	"Figure out how to unlock it",
 	"Unlock Main door!"
 	
 ]
@@ -59,10 +64,11 @@ func _ready():
 		story_text.add_theme_font_size_override("normal_font_size", 40)
 	_refresh_list()
 	%Back.pressed.connect(_on_close)
-	# Default focus
-	grab_default_focus()
-	# Build focus graph after population
-	_ensure_focus_nav()
+	# Default focus only when the base UI is visible
+	if not _story_shown:
+		grab_default_focus()
+		# Build focus graph after population
+		_ensure_focus_nav()
 
 func _set_base_ui_visible(v: bool) -> void:
 	var dim := get_node_or_null("Dim") as CanvasItem
@@ -114,6 +120,10 @@ func _dismiss_story(_save_seen: bool) -> void:
 		overlay.visible = false
 	_story_shown = false
 	_set_base_ui_visible(true)
+	# Give focus to the base UI now that it’s visible
+	await get_tree().process_frame
+	grab_default_focus()
+	_ensure_focus_nav()
 	# Per-session gating already handled via root metadata
 
 func _load_story_seen() -> bool:
