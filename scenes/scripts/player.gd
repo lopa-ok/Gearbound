@@ -216,6 +216,9 @@ func _ensure_impact_player() -> void:
 		impact_player.stream = impact_stream
 
 func _ready():
+	# Ensure controller mappings exist
+	if Engine.get_main_loop() != null:
+		ControllerSupport.ensure_input_map()
 	_ensure_switch_player_action()
 	# Scaling disabled (only applies if changed from 1.0)
 	if scale_multiplier != 1.0:
@@ -259,7 +262,8 @@ func _ensure_switch_player_action():
 func _input(event):
 	if not _is_active_rc:
 		return # ignore input when inactive to avoid extra toggles
-	if event is InputEventKey and event.is_pressed() and event.physical_keycode == KEY_TAB:
+	# Use action instead of hardcoded key so controller bindings work (e.g., Y button)
+	if Input.is_action_just_pressed("switch_player"):
 		if _switcher:
 			var target := &"human" if _switcher.is_rc_active() else &"rc"
 			_switcher.set_active(target)

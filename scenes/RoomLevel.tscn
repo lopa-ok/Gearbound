@@ -1,4 +1,4 @@
-[gd_scene load_steps=171 format=4 uid="uid://bchw5g5rjommu"]
+[gd_scene load_steps=172 format=4 uid="uid://bchw5g5rjommu"]
 
 [ext_resource type="Script" uid="uid://0qhdd6qs7nag" path="res://scenes/scripts/room_level.gd" id="1_a4r2b"]
 [ext_resource type="PackedScene" uid="uid://mla68vsnd8kp" path="res://scenes/RacePlayer.tscn" id="1_bktfv"]
@@ -94,6 +94,7 @@
 [ext_resource type="PackedScene" uid="uid://buenfoikg5nyy" path="res://resources/FurnitureScenes/kitchenMicrowave.tscn" id="70_5672m"]
 [ext_resource type="PackedScene" uid="uid://byp8qxlermkx8" path="res://resources/FurnitureScenes/kitchenCabinetUpperDouble.tscn" id="71_30v2i"]
 [ext_resource type="PackedScene" uid="uid://cenq3k41w6iw0" path="res://scenes/items/CassetteTape.tscn" id="71_ud7p7"]
+[ext_resource type="AudioStream" uid="uid://2lb5tijfub6h" path="res://resources/Music/Tape.mp3" id="72_kvh1b"]
 [ext_resource type="PackedScene" uid="uid://bimghcox3056y" path="res://resources/FurnitureScenes/kitchenCoffeeMachine.tscn" id="72_od0ho"]
 [ext_resource type="PackedScene" uid="uid://riwjkokpqjfb" path="res://resources/FurnitureScenes/SquareRug2.tscn" id="73_lhdtq"]
 [ext_resource type="PackedScene" uid="uid://c2m53t2vpowo5" path="res://resources/FurnitureScenes/Hood.tscn" id="74_8l8aa"]
@@ -689,7 +690,7 @@ transform = Transform3D(-8.63377, 0, -10.6066, 0, 15, 0, 8.63377, 0, -10.6066, -
 transform = Transform3D(-10.7975, 0, -10.6066, 0, 15, 0, 10.7975, 0, -10.6066, -130.641, -0.333, 8.59187)
 
 [node name="wall27" parent="Level" instance=ExtResource("4_jcleb")]
-transform = Transform3D(-4.53673, 0, 12.3475, 0, 15, 0, -6.5771, 0, -8.51701, -109.22, -0.333, 7.47021)
+transform = Transform3D(-4.53673, 0, 12.3475, 0, 15, 0, -6.5771, 0, -8.51701, -109.22, -0.333, 7.63525)
 
 [node name="wall56" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(-9.32, 0, -2.26494e-06, 0, 15, 0, 1.40728e-06, 0, -15, -113.668, -0.333, 1.01583)
@@ -1330,7 +1331,7 @@ transform = Transform3D(-3.60624, 0, 10.6066, 0, 15, 0, -3.60624, 0, -10.6066, -
 transform = Transform3D(-5.16895, 0, 10.6066, 0, 15, 0, -5.16895, 0, -10.6066, -151.249, 21.1389, 6.59532)
 
 [node name="wall87" parent="Level" instance=ExtResource("4_jcleb")]
-transform = Transform3D(37.0383, 0, -10.6066, 0, 15, 0, 37.0383, 0, 10.6066, -141.309, 21.1389, -31.0521)
+transform = Transform3D(33.5627, 0, -11.5162, 0, 15, 0, 40.2146, 0, 9.61129, -141.309, 21.1389, -31.0521)
 
 [node name="wall88" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(-8.20951, 0, 10.6066, 0, 15, 0, -8.20951, 0, -10.6066, -136.252, 21.1389, -9.13004)
@@ -1516,7 +1517,7 @@ transform = Transform3D(-11.872, 0, -9.16814, 0, 15, 0, 9.16814, 0, -11.872, -16
 transform = Transform3D(10.3869, 0, 10.8219, 0, 15, 0, -10.8219, 0, 10.3869, -74.8888, 26.7807, -30.6505)
 
 [node name="coatRackStanding2" parent="Level" instance=ExtResource("39_2lepv")]
-transform = Transform3D(-0.766476, 0, 14.9804, 0, 15, 0, -14.9804, 0, -0.766476, -108.741, 21.1222, -3.36634)
+transform = Transform3D(-0.766476, 0, 14.9804, 0, 15, 0, -14.9804, 0, -0.766476, -85.8877, 21.1222, -34.7892)
 
 [node name="chairRounded9" parent="Level" instance=ExtResource("40_uila4")]
 transform = Transform3D(6.10105, 0, -13.7032, 0, 15, 0, 13.7032, 0, 6.10105, -73.9684, 21.1268, 9.23101)
@@ -1638,7 +1639,7 @@ transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -12
 transform = Transform3D(10.3835, 0, 10.8251, 0, 15, 0, -10.8251, 0, 10.3835, -144.966, 21.1495, 1.10615)
 
 [node name="bookcaseOpen7" parent="Level" instance=ExtResource("57_c265k")]
-transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -81.537, 21.1495, 1.00375)
+transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -84.5825, 21.1495, 1.00375)
 
 [node name="PlantShelfSpawner" type="Node3D" parent="Level/bookcaseOpen7"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.657758, 0.602932, 0.387453)
@@ -1668,7 +1669,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.547784, -0.470613, -0.5062
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.378957, -0.48064, -0.505777)
 
 [node name="bookcaseOpen8" parent="Level" instance=ExtResource("57_c265k")]
-transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -87.5987, 21.1495, 0.443889)
+transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -90.6442, 21.1495, 0.443889)
 
 [node name="PlantShelfSpawner" type="Node3D" parent="Level/bookcaseOpen8"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.657761, 0.602932, 0.387453)
@@ -1699,7 +1700,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.547784, -0.470613, -0.5062
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.378957, -0.48064, -0.505777)
 
 [node name="bookcaseOpen9" parent="Level" instance=ExtResource("57_c265k")]
-transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -93.6873, 21.1495, -0.118464)
+transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -96.7328, 21.1495, -0.118464)
 
 [node name="PlantShelfSpawner" type="Node3D" parent="Level/bookcaseOpen9"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.657759, 0.602932, 0.387453)
@@ -1730,7 +1731,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.547784, -0.470613, -0.5062
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.378957, -0.48064, -0.505777)
 
 [node name="bookcaseOpen10" parent="Level" instance=ExtResource("57_c265k")]
-transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -99.8019, 21.1495, -0.683226)
+transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -102.847, 21.1495, -0.683226)
 
 [node name="PlantShelfSpawner" type="Node3D" parent="Level/bookcaseOpen10"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.657759, 0.602932, 0.387453)
@@ -1808,7 +1809,8 @@ transform = Transform3D(-1.30734, 0, -14.9429, 0, 15, 0, 14.9429, 0, -1.30734, -
 transform = Transform3D(-0.0926757, 0, 14.9997, 0, 15, 0, -14.9997, 0, -0.0926757, -26.8365, 5.3711, 16.4649)
 
 [node name="CassetteTape" parent="Level" instance=ExtResource("71_ud7p7")]
-transform = Transform3D(-0.244232, 0, 0.053394, 0, 0.25, 0, -0.053394, 0, -0.244232, -99.9331, 5.44058, 2.93639)
+transform = Transform3D(-0.244232, 0, 0.053394, 0, 0.25, 0, -0.053394, 0, -0.244232, -108.196, 5.39334, -19.5374)
+tape_stream = ExtResource("72_kvh1b")
 tape_name = "Intro v0.1"
 item_type = "cassette_tape"
 item_id = "cassette_tape_1"
@@ -2115,6 +2117,18 @@ transform = Transform3D(-3.20465e-09, 0, 0.0733138, 0, 0.0733138, 0, -0.0733138,
 light_color = Color(0.805161, 0.911519, 0.95274, 1)
 shadow_enabled = true
 omni_range = 51.62
+omni_attenuation = 0.7
+
+[node name="OmniLight3D19" type="OmniLight3D" parent="Lighting/UpperFloor"]
+transform = Transform3D(-3.20464e-09, 0, -0.0733138, 0, 0.0733138, 0, 0.0733138, 0, -3.20464e-09, 0.259719, 3.69337, -4.46904)
+light_color = Color(0.917647, 0.921569, 0.458824, 1)
+omni_range = 17.539
+omni_attenuation = 0.7
+
+[node name="OmniLight3D20" type="OmniLight3D" parent="Lighting/UpperFloor"]
+transform = Transform3D(-3.20464e-09, 0, -0.0733138, 0, 0.0733138, 0, 0.0733138, 0, -3.20464e-09, 0.457992, 3.69337, -6.43158)
+light_color = Color(0.917647, 0.921569, 0.458824, 1)
+omni_range = 17.539
 omni_attenuation = 0.7
 
 [node name="Vents" type="Node3D" parent="."]
@@ -3457,6 +3471,12 @@ transform = Transform3D(14.4909, 2.76042, 0.107794, -3.8165, 10.1162, 2.98975, 0
 [node name="lampSquareFloor2" parent="." instance=ExtResource("63_y1a7s")]
 transform = Transform3D(14.4909, 2.76042, 0.107794, -3.8165, 10.1162, 2.98975, 0.670018, -2.07792, 14.6986, -61.1561, 2.24156, -10.1161)
 
+[node name="lampSquareFloor4" parent="." instance=ExtResource("63_y1a7s")]
+transform = Transform3D(11.9402, 0, 9.07918, 0, 10.69, 0, -9.07922, 0, 11.9402, -112.233, 22.8351, 0.869774)
+
+[node name="lampSquareFloor5" parent="." instance=ExtResource("63_y1a7s")]
+transform = Transform3D(14.9903, 0, 0.541281, 0, 10.69, 0, -0.541285, 0, 14.9902, -83.7002, 22.8351, 3.28952)
+
 [node name="Kitchen" type="Node3D" parent="."]
 
 [node name="KnifeHolder" parent="Kitchen" instance=ExtResource("56_7yrvy")]
@@ -3511,7 +3531,7 @@ transform = Transform3D(15, 0, 0.0253938, 0, 15, 0, -0.0253938, 0, 15, -62.4116,
 transform = Transform3D(15, 0, 0.0253938, 0, 15, 0, -0.0253938, 0, 15, -68.6722, 11.3589, -56.615)
 
 [node name="rugSquare" parent="Kitchen" instance=ExtResource("73_lhdtq")]
-transform = Transform3D(25, 0, 0, 0, 1, 0, 0, 0, 25, -65.1332, 1.3, -26.628)
+transform = Transform3D(25, 0, 0, 0, 1, 0, 0, 0, 25, -65.6323, 1.3, -25.3644)
 
 [node name="hoodModern" parent="Kitchen" instance=ExtResource("74_8l8aa")]
 transform = Transform3D(-6.55671e-07, 0, -19.11, 0, 24.87, 0, 15, 0, -8.35325e-07, -38.0619, 11.6626, -33.7022)

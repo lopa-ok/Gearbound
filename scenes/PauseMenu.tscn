@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://1mm6m24bmptq" path="res://scenes/scripts/ui/PauseMenu.gd" id="1"]
 [ext_resource type="Theme" uid="uid://dkf88k4vtclv1" path="res://scenes/MainMenu.tres" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/HintsMenu.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://doc36u1jn8pfv" path="res://scenes/HintsMenu.tscn" id="3"]
 
 [sub_resource type="StyleBoxFlat" id="BtnNormal"]
 bg_color = Color(1, 0.92549, 0.694118, 1)

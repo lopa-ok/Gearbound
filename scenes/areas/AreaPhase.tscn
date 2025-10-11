@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/scripts/areas/AreaPhase.gd" id="1"]
+
+[sub_resource type="BoxShape3D" id="1"]
+size = Vector3(6, 2, 6)
+
+[node name="AreaPhase" type="Area3D"]
+script = ExtResource("1")
+monitoring = true
+monitorable = true
+collision_layer = 1
+collision_mask = 1
+phase_name = "phase_a"
+allowed_groups = PackedStringArray("human_player")
+allow_rc = false
+
+debug_log = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("1")

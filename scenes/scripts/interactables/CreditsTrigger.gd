@@ -22,7 +22,10 @@ func _ready() -> void:
 		mat.emission_enabled = true
 		mat.emission = glow_color
 		mat.emission_energy_multiplier = glow_strength
-		mesh.set_surface_override_material(0, mat)
+		if mesh.mesh.get_surface_count() > 0:
+			mesh.set_surface_override_material(0, mat)
+		else:
+			mesh.material_override = mat
 	# Connect signals
 	body_entered.connect(_on_body_entered)
 	print("[CreditsTrigger] Ready | scene_path=%s menu_path=%s" % [credits_scene_path, credits_menu_path])

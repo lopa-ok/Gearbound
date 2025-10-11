@@ -8,8 +8,30 @@ var player_inside := false
 var _paused_by_checklist := false
 var _prev_mouse_mode := Input.MOUSE_MODE_VISIBLE
 
+# --- Device-aware prompt settings (inspector) ---
+@export_group("Prompt")
+@export var prompt_use_device_hint: bool = true
+@export var prompt_action: String = "interact"
+@export var kb_prompt_template: String = ""
+@export var pad_prompt_template: String = ""
+@export var kb_font: Font
+@export var pad_font: Font
+@export var kb_font_size: int = 28
+@export var pad_font_size: int = 32
+@export var fallback_prompt: String = "" # used when device-aware resolve returns empty
+@export_group("")
+
 func _ready():
 	interact_icon.visible = true
+	# If no explicit fallback set, keep whatever is authored on the Label3D (e.g., icon glyph)
+	if fallback_prompt == "" and is_instance_valid(interact_icon):
+		fallback_prompt = String(interact_icon.text)
+	# Initialize prompt text/font based on device
+	if prompt_use_device_hint:
+		_update_prompt()
+		var idm := InputDeviceManager.get_or_null()
+		if idm and not idm.device_changed.is_connected(_on_device_changed_prompt):
+			idm.device_changed.connect(_on_device_changed_prompt)
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
@@ -68,12 +90,13 @@ func _on_checklist_closed() -> void:
 func _on_body_entered(body: Node):
 	if body.is_in_group("player"):
 		player_inside = true
-		# ...label stays visible regardless of distance...
+		 # Keep label visible always; refresh text (useful if device changed while away)
+		if prompt_use_device_hint:
+			_update_prompt()
 
 func _on_body_exited(body: Node):
 	if body.is_in_group("player"):
 		player_inside = false
-		# ...label stays visible regardless of distance...
 
 # --- Camera-facing helpers ---
 func _get_current_camera() -> Camera3D:
@@ -131,3 +154,31 @@ func _is_human_active() -> bool:
 		if hcam and hcam is Camera3D and (hcam as Camera3D).current:
 			return true
 	return false
+
+# --- Device-aware prompt helpers ---
+func _on_device_changed_prompt(_is_controller: bool, _name: String) -> void:
+	_update_prompt()
+
+func _update_prompt() -> void:
+	if not is_instance_valid(interact_icon):
+		return
+	var use_pad: bool = false
+	var idm := InputDeviceManager.get_or_null()
+	if idm:
+		var v = idm.get("_is_controller_active")
+		if typeof(v) == TYPE_BOOL:
+			use_pad = v
+	var tpl := pad_prompt_template if use_pad else kb_prompt_template
+	var txt := InputDeviceManager.format_action(prompt_action, tpl)
+	if String(txt) == "":
+		txt = fallback_prompt
+	interact_icon.text = txt
+	# Only override font and size when a font is provided to avoid scaling authored labels
+	if use_pad and pad_font:
+		interact_icon.font = pad_font
+		if pad_font_size > 0:
+			interact_icon.font_size = pad_font_size
+	elif (not use_pad) and kb_font:
+		interact_icon.font = kb_font
+		if kb_font_size > 0:
+			interact_icon.font_size = kb_font_size

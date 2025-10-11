@@ -38,6 +38,8 @@ extends Node3D
 @export var volume_db: float = -2.0
 @export var bg_music_fade_out_sec: float = 0.8
 @export var bg_music_fade_in_sec: float = 0.8
+@export var audio_player_path: NodePath
+var _audio_node: Node = null
 
 var _use_area: Area3D
 var _players_in_area: Array = []
@@ -168,26 +170,15 @@ func try_interact(player: Node) -> bool:
 		if debug_log: print("[CassettePlayer] Crosshair not on cassette player.")
 		return false
 	# Insert tape and start playing its track
-	var stream: AudioStream = null
-	if tape.has_method("get_tape_stream"):
-		stream = tape.get_tape_stream()
-		if debug_log: print("[CassettePlayer] Tape stream resolved via method: %s" % str(stream))
-	else:
-		# Fall back to exported properties commonly used on tape items
-		if "tape_stream" in tape and tape.tape_stream is AudioStream:
-			stream = tape.tape_stream
-		elif "stream" in tape and tape.stream is AudioStream:
-			stream = tape.stream
-		if debug_log: print("[CassettePlayer] Tape stream resolved via property: %s" % str(stream))
-	if stream == null:
-		if debug_log: push_warning("Cassette tape has no tape_stream set.")
+	if not _load_tape_stream_into_player(tape):
+		if debug_log: push_warning("Cassette tape has no valid stream set.")
 		return false
 	# Set up player and remember stream
-	_loaded_stream = stream
+	_loaded_stream = _resolve_tape_stream(tape)
 	_inserted_tape = null if consume_tape_after_insert else tape
 	if _asp:
 		_asp.stop()
-		_asp.stream = stream
+		_asp.stream = _loaded_stream
 		if debug_log: print("[CassettePlayer] AudioStreamPlayer3D stream set. Starting playback...")
 		_fade_out_bg_music()
 		_asp.play()
@@ -356,3 +347,51 @@ func _restore_bg_music() -> void:
 	if music and not music.playing and music.has_method("ensure_playing"):
 		if debug_log: print("[CassettePlayer] Restoring BgMusic if stopped...")
 		music.call("ensure_playing")
+
+func _resolve_tape_stream(tape: Node) -> AudioStream:
+	if tape == null:
+		return null
+	if tape.has_method("get_current_stream"):
+		var s: AudioStream = tape.get_current_stream()
+		if s:
+			return s
+	if tape.has_method("get_tape_stream"):
+		var s2: AudioStream = tape.get_tape_stream()
+		if s2:
+			return s2
+	if "tape_stream" in tape and tape.tape_stream != null:
+		return tape.tape_stream
+	if "stream" in tape and tape.stream != null:
+		return tape.stream
+	return null
+
+func _load_tape_stream_into_player(tape: Node) -> bool:
+	var s := _resolve_tape_stream(tape)
+	if s == null:
+		return false
+	var p := _get_audio_node()
+	if p == null or not is_instance_valid(p):
+		if Engine.is_editor_hint():
+			print("[CassettePlayer] Audio player node not found; set audio_player_path on ", name)
+		return false
+	if p is AudioStreamPlayer:
+		(p as AudioStreamPlayer).stream = s
+	elif p is AudioStreamPlayer3D:
+		(p as AudioStreamPlayer3D).stream = s
+	return true
+
+func _get_audio_node() -> Node:
+	if _audio_node != null and is_instance_valid(_audio_node):
+		return _audio_node
+	if audio_player_path != NodePath(""):
+		_audio_node = get_node_or_null(audio_player_path)
+	if _audio_node == null:
+		_audio_node = get_node_or_null("AudioStreamPlayer")
+	if _audio_node == null:
+		_audio_node = get_node_or_null("AudioStreamPlayer3D")
+	if _audio_node == null:
+		for c in get_children():
+			if c is AudioStreamPlayer or c is AudioStreamPlayer3D:
+				_audio_node = c
+				break
+	return _audio_node

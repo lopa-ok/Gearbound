@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://scenes/shaders/TornPaper.gdshader" id="1"]
+
+[sub_resource type="ShaderMaterial" id="1"]
+shader = ExtResource("1")
+shader_parameter/use_base_tex = false
+shader_parameter/paper_color = Color(0.968, 0.952, 0.902, 1)
+shader_parameter/has_noise = false
+shader_parameter/noise_scale = 4.0
+shader_parameter/edge_width = 0.06
+shader_parameter/edge_softness = 0.02
+shader_parameter/grain_strength = 0.0
+shader_parameter/draw_shadow = true
+shader_parameter/shadow_color = Color(0, 0, 0, 1)
+shader_parameter/shadow_strength = 0.35
+shader_parameter/shadow_spread = 0.08
+shader_parameter/shadow_offset = Vector2(8, 10) / 1000.0
+
+[node name="TornPaperPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_top = 64.0
+offset_right = -64.0
+offset_bottom = -64.0
+
+[node name="Paper" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+stretch_mode = 6
+material = SubResource("1")

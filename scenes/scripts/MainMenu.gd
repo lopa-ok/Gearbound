@@ -6,6 +6,9 @@ const SETTINGS_MENU = preload("res://scenes/SettingsMenu.tscn")
 var settings_menu: Control
 
 func _ready():
+	# Ensure controller/gamepad input mappings exist
+	if Engine.get_main_loop() != null:
+		ControllerSupport.ensure_input_map()
 	# Fade in when arriving at the main menu from another scene
 	Transition.play_transition("transition_in")
 	# Instance the settings menu and add it to the viewport root so it fills the screen
@@ -32,11 +35,49 @@ func _ready():
 			var c := p.get_node("CrosshairLayer/Crosshair") as Control
 			if c:
 				c.visible = false
+	# Focus and wire focus neighbors for controller navigation
+	var btn_new := get_node_or_null("NewGameButton") as Button
+	var btn_settings := get_node_or_null("SettingsButton") as Button
+	var btn_quit := get_node_or_null("QuitButton") as Button
+	var buttons: Array = []
+	if btn_new: buttons.append(btn_new)
+	if btn_settings: buttons.append(btn_settings)
+	if btn_quit: buttons.append(btn_quit)
+	for i in buttons.size():
+		var b: Button = buttons[i]
+		b.focus_mode = Control.FOCUS_ALL
+		var prev: Button = buttons[(i - 1 + buttons.size()) % buttons.size()]
+		var next: Button = buttons[(i + 1) % buttons.size()]
+		b.focus_neighbor_top = b.get_path_to(prev)
+		b.focus_neighbor_bottom = b.get_path_to(next)
+	if btn_new:
+		# Defer focus to ensure nothing steals it this frame
+		btn_new.call_deferred("grab_focus")
+
+func _unhandled_input(event):
+	# Block pause on main menu
+	if event.is_action_pressed("pause"):
+		get_viewport().set_input_as_handled()
+		return
+	# Allow B / Cancel to close settings menu
+	if event.is_action_pressed("ui_cancel") and settings_menu and settings_menu.visible:
+		settings_menu.visible = false
+		get_viewport().set_input_as_handled()
+		return
+	# A / Accept should trigger the focused button
+	if event.is_action_pressed("ui_accept"):
+		var f := get_viewport().gui_get_focus_owner()
+		if f and f is Button:
+			(f as Button).emit_signal("pressed")
+			get_viewport().set_input_as_handled()
+			return
 
 func _on_new_game_button_pressed():
-	# Play the fade-out transition
+	# Cache the SceneTree before awaiting, as this node may be temporarily removed from the tree
+	var tree: SceneTree = get_tree()
 	await Transition.play_transition("transition_out")
-	get_tree().change_scene_to_packed(WORLD)
+	if tree:
+		tree.change_scene_to_packed(WORLD)
 
 func _on_quit_button_pressed():
 	get_tree().quit()

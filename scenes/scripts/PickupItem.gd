@@ -3,6 +3,17 @@ extends Node3D
 # Add this root node automatically to group used by player detection.
 
 @export var pickup_prompt: String = ""
+# Device-aware prompt settings
+@export_group("Prompt")
+@export var prompt_use_device_hint: bool = true
+@export var prompt_action: String = "interact" # action to hint
+@export var kb_prompt_template: String = "Press {key}"
+@export var pad_prompt_template: String = "Press {key}"
+@export var kb_font: Font
+@export var pad_font: Font
+@export var kb_font_size: int = 28
+@export var pad_font_size: int = 32
+@export_group("")
 @export var carry_offset: Vector3 = Vector3.ZERO  # local offset while on car roof (added after parenting)
 @export var disable_process_on_pick: bool = true
 # NEW: item metadata
@@ -65,9 +76,15 @@ func _ready():
 	_label = get_node_or_null("Label3D")
 	if _label:
 		_label.visible = false
-		# Preserve any symbol/text set in the scene; only set if empty
-		if str(_label.text) == "":
+		# Preserve any symbol/text set in the scene if device-aware prompts are disabled
+		if not prompt_use_device_hint and str(_label.text) == "":
 			_label.text = pickup_prompt
+		elif prompt_use_device_hint:
+			_update_prompt()
+			# Listen for input device changes to live-update label text/font
+			var idm := InputDeviceManager.get_or_null()
+			if idm and not idm.device_changed.is_connected(_on_device_changed_prompt):
+				idm.device_changed.connect(_on_device_changed_prompt)
 	_static_body = get_node_or_null("StaticBody3D") as CollisionObject3D
 	if use_physics:
 		_ensure_rigidbody()
@@ -121,6 +138,9 @@ func _process(_delta: float) -> void:
 func _on_screen_entered() -> void:
 	if label_face_player:
 		set_process(true)
+	# Refresh prompt on visibility regain (font sizes may depend on viewport/DPI)
+	if _label and prompt_use_device_hint:
+		_update_prompt()
 
 func _on_screen_exited() -> void:
 	if label_face_player:
@@ -275,7 +295,10 @@ func _on_body_entered(body: Node):
 		return
 	if body.is_in_group("player"):
 		_player_near = true
-		if _label: _label.visible = true
+		if _label:
+			if prompt_use_device_hint:
+				_update_prompt()
+			_label.visible = true
 
 func _on_body_exited(body: Node):
 	if _carried:
@@ -447,3 +470,28 @@ func _apply_material_color_override(root: Node) -> void:
 
 func get_base_scale() -> Vector3:
 	return _base_scale
+
+func _on_device_changed_prompt(_is_controller: bool, _name: String) -> void:
+	if _label and prompt_use_device_hint:
+		_update_prompt()
+
+func _update_prompt() -> void:
+	if _label == null:
+		return
+	var use_pad: bool = false
+	var idm := InputDeviceManager.get_or_null()
+	if idm:
+		var v = idm.get("_is_controller_active")
+		if typeof(v) == TYPE_BOOL:
+			use_pad = v
+	var tpl := pad_prompt_template if use_pad else kb_prompt_template
+	var txt := InputDeviceManager.format_action(prompt_action, tpl)
+	if String(txt) == "" and pickup_prompt != "":
+		txt = pickup_prompt
+	_label.text = txt
+	# Apply font + size for Label3D
+	if use_pad and pad_font:
+		_label.font = pad_font
+	elif (not use_pad) and kb_font:
+		_label.font = kb_font
+	_label.font_size = pad_font_size if use_pad else kb_font_size

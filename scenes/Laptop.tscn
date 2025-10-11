@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=4 uid="uid://dfnrv365qegho"]
+[gd_scene load_steps=11 format=4 uid="uid://dfnrv365qegho"]
 
 [ext_resource type="Script" uid="uid://s7turrewdut3" path="res://resources/FurnitureScenes/InteractShow.gd" id="1_i8612"]
 [ext_resource type="FontFile" uid="uid://d40535qpbpsw" path="res://models/Keyboard & Mouse/Fonts/kenney_input_keyboard_&_mouse.ttf" id="2_1e162"]
+[ext_resource type="FontFile" uid="uid://cotrnrbun88vk" path="res://models/Keyboard & Mouse/Fonts/kenney_input_playstation_series.ttf" id="3_1e162"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vqw26"]
 resource_name = "metalDark"
@@ -114,6 +115,10 @@ shape = SubResource("ConcavePolygonShape3D_0rblk")
 
 [node name="Area3D" type="Area3D" parent="."]
 script = ExtResource("1_i8612")
+kb_font = ExtResource("2_1e162")
+pad_font = ExtResource("3_1e162")
+kb_font_size = 4096
+pad_font_size = 4096
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.128923, 0.200103, -0.057536)

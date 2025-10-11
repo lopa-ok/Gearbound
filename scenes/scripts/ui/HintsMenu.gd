@@ -25,6 +25,10 @@ signal close_requested
 		"The owner seems obsessed with plants...",
 		"Maybe check around the house for some greenery?",
 	],
+	"Cassette Player": [
+		"Press Interact to insert/eject tapes.",
+		"Tapes can give you hints",
+	],
 }
 
 @export var start_expanded := false
@@ -33,8 +37,14 @@ signal close_requested
 @onready var _content: VBoxContainer = get_node_or_null("PanelContainer/RootMargin/RootVBox/Scroll/Content")
 
 func _ready() -> void:
+	# Ensure controller mappings for UI navigation
+	ControllerSupport.ensure_input_map()
 	_ensure_content()
 	_populate()
+	# Focus the first header if available
+	var first_btn := _content.get_child(0).get_child(0) if _content and _content.get_child_count() > 0 else null
+	if first_btn and first_btn is Button:
+		(first_btn as Button).grab_focus()
 	var back := _get_back_button()
 	if back:
 		back.pressed.connect(_on_back_pressed)
@@ -45,6 +55,19 @@ func _ensure_content() -> void:
 	var root_vbox := get_node_or_null("PanelContainer/RootMargin/RootVBox") as VBoxContainer
 	if root_vbox == null:
 		return
+	# Insert an action hint label just under TopBar once
+	if root_vbox.get_node_or_null("ActionHint") == null:
+		var hint := preload("res://scenes/ui/ActionHintLabel.tscn").instantiate()
+		hint.name = "ActionHint"
+		if hint.has_method("set"):
+			hint.set("action_name", "interact")
+		root_vbox.add_child(hint)
+		# Move it after Sep1 if present
+		var sep := root_vbox.get_node_or_null("Sep1")
+		if sep:
+			sep.add_sibling(hint)
+			var idx := sep.get_index()
+			root_vbox.move_child(hint, idx + 1)
 	# Remove legacy Tree if present to avoid layout conflicts
 	var legacy_tree := root_vbox.get_node_or_null("HintsTree") as Tree
 	if legacy_tree:
@@ -54,7 +77,7 @@ func _ensure_content() -> void:
 	scroll.name = "Scroll"
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var content := VBoxContainer.new()
 	content.name = "Content"

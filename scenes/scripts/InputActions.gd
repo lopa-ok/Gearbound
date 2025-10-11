@@ -14,11 +14,20 @@ func _enter_tree() -> void:
 	_ensure_action_key_list("jump", [KEY_SPACE])
 	_ensure_action_key_list("crouch", [KEY_CTRL])
 	# Gamepad bindings
+	_remove_action_joy_button("interact", JoyButton.JOY_BUTTON_X)
 	_ensure_action_joy_button("interact", JoyButton.JOY_BUTTON_A)
-	_ensure_action_joy_button("drop", JoyButton.JOY_BUTTON_X)
+	# Drop remains per latest user intent (Circle)
+	_remove_action_joy_button("drop", JoyButton.JOY_BUTTON_RIGHT_STICK)
+	_ensure_action_joy_button("drop", JoyButton.JOY_BUTTON_B)
+	# Add keyboard 'O' for drop
+	_ensure_action_key("drop", KEY_O)
+	# Switch player
 	_ensure_action_joy_button("switch_player", JoyButton.JOY_BUTTON_START)
+	_ensure_action_joy_button("switch_player", JoyButton.JOY_BUTTON_Y)
+	# Sprint / Jump / Crouch
 	_ensure_action_joy_button("sprint", JoyButton.JOY_BUTTON_LEFT_SHOULDER)
-	_ensure_action_joy_button("jump", JoyButton.JOY_BUTTON_A)
+	_remove_action_joy_button("jump", JoyButton.JOY_BUTTON_RIGHT_SHOULDER)
+	_ensure_action_joy_button("jump", JoyButton.JOY_BUTTON_X)
 	_ensure_action_joy_button("crouch", JoyButton.JOY_BUTTON_B)
 	# Debug: list drop bindings
 	var events := InputMap.action_get_events("drop")
@@ -51,6 +60,14 @@ func _ensure_action_joy_button(action: StringName, button: JoyButton) -> void:
 	ev.button_index = button
 	_ensure_event(action, ev)
 
+func _remove_action_joy_button(action: StringName, button: JoyButton) -> void:
+	if not InputMap.has_action(action):
+		return
+	var ev := InputEventJoypadButton.new()
+	ev.button_index = button
+	if InputMap.action_has_event(action, ev):
+		InputMap.action_erase_event(action, ev)
+
 func _ensure_event(action: StringName, ev: InputEvent) -> void:
 	# Avoid duplicates by comparing with existing events
 	var existing := InputMap.action_get_events(action)
@@ -60,6 +77,9 @@ func _ensure_event(action: StringName, ev: InputEvent) -> void:
 				return
 		elif e is InputEventJoypadButton and ev is InputEventJoypadButton:
 			if e.button_index == (ev as InputEventJoypadButton).button_index:
+				return
+		elif e is InputEventJoypadMotion and ev is InputEventJoypadMotion:
+			if e.axis == (ev as InputEventJoypadMotion).axis and is_equal_approx(e.axis_value, (ev as InputEventJoypadMotion).axis_value):
 				return
 	InputMap.action_add_event(action, ev)
 

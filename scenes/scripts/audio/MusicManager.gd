@@ -10,7 +10,7 @@ class_name MusicManager
 @export var bg_duck_db: float = -80.0
 @export var bg_duck_fade: float = 0.6
 @export var bg_music_group: String = "bg_music" # optional group to mark background players
-@export var bg_music_path: NodePath # optional node (e.g., "/root/BgMusic") to search under
+@export var bg_music_path: NodePath = NodePath("/root/BgMusic") # optional node (e.g., "/root/BgMusic") to search under
 @export var auto_find_bg_by_bus: bool = true # auto-detect any players on this bus_name
 @export_enum("Duck","Pause","Stop") var bg_control_mode: int = 0
 # New: target background volume when not ducked (≈70% linear)

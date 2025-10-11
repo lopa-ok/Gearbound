@@ -25,6 +25,7 @@ PickupTracker="*res://scenes/scripts/ui/PickupTracker.gd"
 CamTransition="*res://scenes/scripts/ui/CamTransition.gd"
 PlayerSwitcher="*res://scenes/scripts/PlayerSwitcher.gd"
 PauseManager="*res://scenes/scripts/ui/PauseManager.gd"
+InputDeviceManager="*res://scenes/scripts/core/InputDeviceManager.gd"
 
 [display]
 
@@ -44,8 +45,8 @@ enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg")
 
 video/crt_overlay_enabled=true
 video/crt_effect_strength=1.0
-video/crt_noise_amount=0.06
-video/crt_flicker_amount=0.011
+video/crt_noise_amount=0.072
+video/crt_flicker_amount=0.028
 
 [global_group]
 

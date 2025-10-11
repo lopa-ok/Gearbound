@@ -7,6 +7,9 @@ func _ready():
 	# Ensure on Music bus
 	if str(bus) == "" or String(bus) != "Music":
 		bus = &"Music"
+	# Mark as background music for auto-detection by MusicManager
+	if not is_in_group("bg_music"):
+		add_to_group("bg_music")
 
 func ensure_playing():
 	# Start or resume background music at the desired volume

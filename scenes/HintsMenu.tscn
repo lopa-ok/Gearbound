@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=5 format=3 uid="uid://doc36u1jn8pfv"]
 
-[ext_resource type="Script" path="res://scenes/scripts/ui/HintsMenu.gd" id="1"]
-[ext_resource type="Theme" path="res://scenes/MainMenu.tres" id="2"]
+[ext_resource type="Script" uid="uid://bhsybyk8fc38o" path="res://scenes/scripts/ui/HintsMenu.gd" id="1"]
+[ext_resource type="Theme" uid="uid://dkf88k4vtclv1" path="res://scenes/MainMenu.tres" id="2"]
 
 [sub_resource type="StyleBoxFlat" id="Style_Panel"]
 bg_color = Color(0.639216, 0.360784, 0.203922, 1)
@@ -29,6 +29,7 @@ corner_radius_bottom_left = 5
 shadow_size = 2
 
 [node name="HintsMenu" type="Control"]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,7 +38,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2")
 script = ExtResource("1")
-visible = false
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -93,7 +93,7 @@ horizontal_scroll_mode = 0
 vertical_scroll_mode = 0
 
 [node name="Content" type="VBoxContainer" parent="PanelContainer/RootMargin/RootVBox/Scroll"]
+custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_minimum_size = Vector2(600, 0)

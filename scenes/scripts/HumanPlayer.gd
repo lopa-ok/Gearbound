@@ -100,6 +100,12 @@ var _vision_rect: ColorRect = null
 # Tooltip options
 @export var show_tape_tooltips: bool = true
 
+@export var controller_look_enabled: bool = true
+@export var controller_look_sensitivity: float = 1.6  # deg per unit per second
+@export var controller_invert_look_y: bool = false
+@export var yaw_node_path: NodePath
+@export var pitch_node_path: NodePath
+
 var carried_item: Node3D = null
 var _pivot: Node3D
 var _cam: Camera3D
@@ -157,6 +163,10 @@ var _step_assist_area_count: int = 0
 var _bottom_msg: Control = null
 var _last_interact_ms_human: int = -1
 
+var _yaw_node: Node3D
+var _pitch_node: Node3D
+var _pitch_deg: float = 0.0
+
 func _ready():
 	_pivot = $Pivot
 	_cam = $Pivot/Camera3D
@@ -199,6 +209,23 @@ func _ready():
 	if _pivot:
 		_stand_camera_y = _pivot.position.y
 		_crouch_camera_y = _stand_camera_y - crouch_camera_drop
+	# Ensure controller mappings exist
+	ControllerSupport.ensure_input_map()
+	# Cache camera yaw/pitch nodes
+	_yaw_node = get_node_or_null(yaw_node_path) as Node3D if yaw_node_path != NodePath("") else null
+	_pitch_node = get_node_or_null(pitch_node_path) as Node3D if pitch_node_path != NodePath("") else null
+	if _yaw_node == null:
+		_yaw_node = self as Node3D
+	if _pitch_node == null:
+		# Prefer a pivot named CameraPivot/Head if present, else first Camera3D
+		_pitch_node = get_node_or_null("CameraPivot") as Node3D
+		if _pitch_node == null:
+			_pitch_node = get_node_or_null("Head") as Node3D
+		if _pitch_node == null:
+			var cam := get_node_or_null("Camera3D") as Node3D
+			if cam:
+				_pitch_node = cam
+	_pitch_deg = _pitch_node.rotation_degrees.x if _pitch_node else 0.0
 
 func _process(delta):
 	_apply_look(delta)
@@ -224,6 +251,8 @@ func _process(delta):
 		# Always refresh tooltip while still looking at the target
 		_maybe_show_target_tooltip(target)
 		_crosshair_scan_t = max(0.0, crosshair_scan_interval)
+	if controller_look_enabled:
+		_apply_controller_look(delta)
 
 func _physics_process(delta):
 	if carry_use_bone and not _carry_bone_bound:
@@ -239,6 +268,9 @@ func _physics_process(delta):
 		_coyote_timer = max(0.0, _coyote_timer - delta)
 	_jump_buffer_timer = max(0.0, _jump_buffer_timer - delta)
 	_area_jump_timer = max(0.0, _area_jump_timer - delta)
+	# NEW: buffer jump on action press (works for controller Square/X and keyboard Space)
+	if Input.is_action_just_pressed("jump"):
+		_jump_buffer_timer = jump_buffer_time
 	_apply_gravity(delta)
 	if _controls_enabled:
 		_move_input(delta)
@@ -248,13 +280,13 @@ func _physics_process(delta):
 	_apply_step_assist(delta)
 	_apply_move()
 	_update_footsteps(delta)
-	_apply_look(delta)
-	_update_animation()
+	# Ensure pickup/drop actions are processed for the human
 	if _controls_enabled:
 		process_pickup_input()
 		process_drop_input()
-	_update_carried_item_transform()
-	_update_safe_and_unstuck(delta)
+	# _apply_look is handled in _process to avoid double application per frame
+	# _apply_look(delta)
+	_update_animation()
 
 func set_rc_player_path(p: NodePath) -> void:
 	_rc_player_path = p
@@ -285,7 +317,8 @@ func _input(event):
 		var invert_factor = -1.0 if invert_y else 1.0
 		_look_x -= event.relative.x * look_sensitivity_mouse * 0.01
 		_look_y -= event.relative.y * look_sensitivity_mouse * 0.01 * invert_factor
-	if event is InputEventJoypadMotion:
+	# When controller look is enabled, polling happens in _apply_controller_look; avoid duplicate here
+	if event is InputEventJoypadMotion and not controller_look_enabled:
 		var inv = -1.0 if invert_y else 1.0
 		if event.axis == 2:
 			_look_x -= event.axis_value * look_sensitivity_pad * 0.02
@@ -294,10 +327,10 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_SPACE:
 		# Keep manual jump behavior via the input jump buffer
 		_jump_buffer_timer = jump_buffer_time
-	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_TAB:
-		if _switcher and _controls_enabled:
-			var target := &"rc"
-			_switcher.set_active(target)
+	# Use action for switching so both keyboard (Tab) and controller (Triangle/Y) work
+	if Input.is_action_just_pressed("switch_player") and _switcher and _controls_enabled:
+		var target := &"rc"
+		_switcher.set_active(target)
 	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_CTRL:
 		if crouch_toggle:
 			_set_crouch(not _is_crouching)
@@ -331,6 +364,20 @@ func _apply_look(delta):
 	else:
 		_look_x = 0.0
 		_look_y = 0.0
+
+func _apply_controller_look(delta: float) -> void:
+	# Read right stick axes and accumulate into the same look deltas used by mouse look.
+	var dx: float = Input.get_axis("look_left", "look_right")
+	var dy: float = Input.get_axis("look_up", "look_down")
+	if controller_invert_look_y:
+		dy = -dy
+	# Interpret sensitivity like before (deg per unit, scaled to deg/sec via 60.0)
+	var deg_per_sec: float = controller_look_sensitivity * 60.0
+	var rad_per_sec: float = deg_to_rad(deg_per_sec)
+	if absf(dx) > 0.01:
+		_look_x -= dx * rad_per_sec * delta
+	if absf(dy) > 0.01:
+		_look_y -= dy * rad_per_sec * delta
 
 func _apply_gravity(delta):
 	var g = gravity

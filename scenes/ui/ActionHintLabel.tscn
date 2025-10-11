@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/scripts/ui/ActionHintLabel.gd" id="1"]
+
+[node name="ActionHintLabel" type="Label"]
+script = ExtResource("1")
+action_name = "interact"
+kb_template = "Press {key}"
+pad_template = "Press {key}"
+kb_font_size = 26
+pad_font_size = 30

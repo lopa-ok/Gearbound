@@ -40,7 +40,11 @@ func _ready():
 	screen_material.set_shader_parameter("reveal_axis_vertical", reveal_axis == RevealAxis.HEIGHT)
 	screen_material.set_shader_parameter("reveal_softness", reveal_softness)
 	_update_fit_params()
-	screen_mesh.set_surface_override_material(0, screen_material)
+	# Safe material assignment: use surface override only if a surface exists, else fallback
+	if screen_mesh and screen_mesh.mesh and screen_mesh.mesh.get_surface_count() > 0:
+		screen_mesh.set_surface_override_material(0, screen_material)
+	else:
+		screen_mesh.material_override = screen_material
 	visible = false
 	set_process(auto_fit_update)
 
