@@ -1333,12 +1333,6 @@ transform = Transform3D(-5.16895, 0, 10.6066, 0, 15, 0, -5.16895, 0, -10.6066, -
 [node name="wall87" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(33.5627, 0, -11.5162, 0, 15, 0, 40.2146, 0, 9.61129, -141.309, 21.1389, -31.0521)
 
-[node name="wall88" parent="Level" instance=ExtResource("4_jcleb")]
-transform = Transform3D(-8.20951, 0, 10.6066, 0, 15, 0, -8.20951, 0, -10.6066, -136.252, 21.1389, -9.13004)
-
-[node name="wall91" parent="Level" instance=ExtResource("4_jcleb")]
-transform = Transform3D(-5.38108, 0, -10.6066, 0, 15, 0, 5.38108, 0, -10.6066, -146.862, 21.1389, 1.25762)
-
 [node name="wall92" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(-5.38108, 0, -10.6066, 0, 15, 0, 5.38108, 0, -10.6066, -146.862, 21.1389, 1.25762)
 
@@ -1353,12 +1347,6 @@ transform = Transform3D(5.14112, 0, -14.0914, 0, 15, 0, 14.0914, 0, 5.14112, -72
 
 [node name="wallDoorway12" parent="Level" instance=ExtResource("5_x0eo1")]
 transform = Transform3D(-10.6066, 0, -10.6066, 0, 15, 0, 10.6066, 0, -10.6066, -122.979, 21.2703, 0.938039)
-
-[node name="wallDoorway13" parent="Level" instance=ExtResource("5_x0eo1")]
-transform = Transform3D(-10.6066, 0, -10.6066, 0, 15, 0, 10.6066, 0, -10.6066, -127.433, 21.1279, -18.1779)
-
-[node name="wallDoorway15" parent="Level" instance=ExtResource("5_x0eo1")]
-transform = Transform3D(-10.6066, 0, -10.6066, 0, 15, 0, 10.6066, 0, -10.6066, -137.987, 21.1279, -7.62866)
 
 [node name="wallDoorway16" parent="Level" instance=ExtResource("5_x0eo1")]
 transform = Transform3D(-0.00235826, 0, -15, 0, 15, 0, 15, 0, -0.00235826, -55.6894, 21.1398, -9.83514)
@@ -1401,9 +1389,6 @@ transform = Transform3D(33.74, 0, 0, 0, 15, 0, 0, 0, 15, -204.355, 21.1589, 46.4
 
 [node name="wall107" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(13.04, 0, 0, 0, 15, 0, 0, 0, 15, -177.975, 21.1589, -12.8417)
-
-[node name="wall108" parent="Level" instance=ExtResource("4_jcleb")]
-transform = Transform3D(21.1, 0, 0, 0, 15, 0, 0, 0, 15, -165.617, 21.1589, -16.5807)
 
 [node name="wall109" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(34.44, 0, 0, 0, 15, 0, 0, 0, 15, -66.9843, 21.1589, -13.6288)
@@ -1464,9 +1449,6 @@ transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -94.6981, 37.1583, -6.9808
 
 [node name="lampSquareCeiling24" parent="Level" instance=ExtResource("21_yxu0s")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -94.6981, 37.1583, -43.2802)
-
-[node name="lampSquareCeiling22" parent="Level" instance=ExtResource("21_yxu0s")]
-transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -123.484, 37.1273, -9.25254)
 
 [node name="wall115" parent="Level" instance=ExtResource("4_jcleb")]
 transform = Transform3D(7.5506, 0, -14.0914, 0, 15, 0, 20.6956, 0, 5.14113, -79.6163, 21.1389, -48.1941)
@@ -1594,10 +1576,6 @@ transform = Transform3D(11.2785, 0, -9.88923, 0, 15, 0, 9.88923, 0, 11.2785, -12
 [node name="pottedPlant4" parent="Level" instance=ExtResource("44_thq5b")]
 transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, -146.082, 21.1398, 55.2236)
 
-[node name="KeyDoor4" parent="Level" instance=ExtResource("51_adeye")]
-transform = Transform3D(10.6066, 0, 10.6066, 0, 15, 0, -10.6066, 0, 10.6066, -134.509, 21.1518, -9.4382)
-required_key_id = "white_key"
-
 [node name="KeyItem6" parent="Level" instance=ExtResource("51_aleum")]
 transform = Transform3D(0.199746, -1.5284e-05, 0.0100706, 1.14811e-05, 0.2, 7.58101e-05, -0.0100706, -7.51358e-05, 0.199746, -99.3679, 33.8183, 6.15845)
 item_id = "white_key"
@@ -1634,9 +1612,6 @@ transform = Transform3D(-14.9996, 0.103602, -0.00573235, 0.103611, 14.9996, -0.0
 
 [node name="rugRectangle4" parent="Level" instance=ExtResource("17_qldhk")]
 transform = Transform3D(-6.55671e-07, 0, -15, 0, 15, 0, 15, 0, -6.55671e-07, -125.963, 21.0246, 14.3085)
-
-[node name="KeyDoor5" parent="Level" instance=ExtResource("56_mm1pa")]
-transform = Transform3D(10.3835, 0, 10.8251, 0, 15, 0, -10.8251, 0, 10.3835, -144.966, 21.1495, 1.10615)
 
 [node name="bookcaseOpen7" parent="Level" instance=ExtResource("57_c265k")]
 transform = Transform3D(-14.9887, 0, 0.584506, 0, 15, 0, -0.584506, 0, -14.9887, -84.5825, 21.1495, 1.00375)
@@ -3443,8 +3418,8 @@ shape = SubResource("ConvexPolygonShape3D_7yrvy")
 
 [node name="HumanPlayer" parent="." instance=ExtResource("61_cwh6w")]
 transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -82.1243, 5.47858, 27.9744)
-move_speed = 10.0
 jump_velocity = 16.0
+move_speed = 10.0
 gravity = 32.0
 pickup_radius = 4.5
 
